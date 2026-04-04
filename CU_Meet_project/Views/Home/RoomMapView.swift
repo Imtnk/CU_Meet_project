@@ -12,7 +12,6 @@ struct RoomMapView: View {
     
     @StateObject private var viewModel = HomeViewModel()
     @State private var selectedRoom: MeetingRoom? = nil
-    @State private var showSheet = false
     
     var body: some View {
         VStack {
@@ -32,7 +31,6 @@ struct RoomMapView: View {
                     Annotation(room.name, coordinate: room.coordinate) {
                         Button {
                             selectedRoom = room
-                            showSheet = true
                         } label: {
                             Image(systemName: "mappin.circle.fill")
                                 .resizable()
@@ -82,12 +80,10 @@ struct RoomMapView: View {
             
             Spacer()
         }
-        .sheet(isPresented: $showSheet) {
-            if let room = selectedRoom {
-                RoomDetailSheet(room: room)
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
-            }
+        .sheet(item: $selectedRoom) { room in
+            RoomDetailSheet(room: room)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .navigationTitle("Select Room")
     }
