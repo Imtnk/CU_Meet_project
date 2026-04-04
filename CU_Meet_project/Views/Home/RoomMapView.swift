@@ -12,6 +12,20 @@ struct RoomMapView: View {
     
     @StateObject private var viewModel = HomeViewModel()
     @State private var selectedRoom: MeetingRoom? = nil
+    @State private var recentRooms: [MeetingRoom] = []
+    
+    private func addToRecent(_ room: MeetingRoom) {
+        // Remove if already exists (avoid duplicates)
+        recentRooms.removeAll { $0.id == room.id }
+        
+        // Insert at front
+        recentRooms.insert(room, at: 0)
+        
+        // Keep only last 3
+        if recentRooms.count > 3 {
+            recentRooms = Array(recentRooms.prefix(3))
+        }
+    }
     
     var body: some View {
         VStack {
@@ -31,6 +45,7 @@ struct RoomMapView: View {
                     Annotation(room.name, coordinate: room.coordinate) {
                         Button {
                             selectedRoom = room
+                            addToRecent(room)
                         } label: {
                             Image(systemName: "mappin.circle.fill")
                                 .resizable()
@@ -74,9 +89,46 @@ struct RoomMapView: View {
                         Image(systemName: "arrow.clockwise")
                     }
                 }
-                .padding(.horizontal, 10)
+                .padding(.top, 10)
             }
             .padding()
+            
+            // Recent
+            if !recentRooms.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    
+                    Text("Recent")
+                        .font(.headline)
+                        .padding(.horizontal)
+                    
+                    VStack(spacing: 8) {
+                        ForEach(recentRooms) { room in
+                            Button {
+                                selectedRoom = room
+                            } label: {
+                                HStack {
+                                    Text(room.name)
+                                        .font(.body)
+                                        .foregroundColor(.primary)
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                .background(Color(.systemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .shadow(radius: 2)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .padding(.bottom, 10)
+            }
             
             Spacer()
         }
