@@ -13,8 +13,8 @@ struct HomeView: View {
         NavigationStack {
             VStack(spacing: 20) {
                 
-                Spacer()
-                
+                Text("CU Meet").font(.title)
+                Image("logo_meet").resizable().scaledToFill().frame(width: 200, height: 200).cornerRadius(75).shadow(radius: 3)
                 NavigationLink(destination: RoomMapView()) {
                     Text("Book Now")
                         .font(.title2)

@@ -26,5 +26,13 @@ let rooms: [MeetingRoom] = [
     MeetingRoom(
         name: "Business Room",
         coordinate: CLLocationCoordinate2D(latitude: 13.7358, longitude: 100.5338)
+    ),
+    MeetingRoom(
+        name: "Lecture Hall",
+        coordinate: CLLocationCoordinate2D(latitude: 13.7372, longitude: 100.5285)
+    ),
+    MeetingRoom(
+        name: "Medical Conference Room",
+        coordinate: CLLocationCoordinate2D(latitude: 13.7340, longitude: 100.5355)
     )
 ]

@@ -14,12 +14,6 @@ struct RoomDetailSheet: View {
     var body: some View {
         VStack(spacing: 16) {
             
-            // Drag indicator
-            Capsule()
-                .frame(width: 40, height: 5)
-                .foregroundColor(.gray.opacity(0.4))
-                .padding(.top, 8)
-            
             Text("Meeting Info")
                 .font(.headline)
                 .padding(.top, 8)
