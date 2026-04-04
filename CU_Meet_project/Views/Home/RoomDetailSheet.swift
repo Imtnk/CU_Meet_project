@@ -11,10 +11,22 @@ struct RoomDetailSheet: View {
     
     let room: MeetingRoom
     
+    // mock data
+    private func percentage(for star: Int) -> CGFloat {
+        switch star {
+        case 5: return 0.98
+        case 4: return 0.02
+        case 3: return 0.0
+        case 2: return 0.0
+        case 1: return 0.0
+        default: return 0.0
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 16) {
             
-            Text("Meeting Info")
+            Text("Meeting Room Info")
                 .font(.headline)
                 .padding(.top, 8)
             
@@ -30,18 +42,85 @@ struct RoomDetailSheet: View {
                 .font(.title)
                 .fontWeight(.bold)
             
-            // Date + Time (mock)
-            HStack(spacing: 12) {
-                Text("Apr 1, 2025")
-                    .padding(8)
-                    .background(Color.gray.opacity(0.2))
-                    .clipShape(Capsule())
+            //Rating (mock)
+            VStack(alignment: .leading, spacing: 16) {
                 
-                Text("9:41 AM")
-                    .padding(8)
-                    .background(Color.gray.opacity(0.2))
-                    .clipShape(Capsule())
+                // Top Rating Row
+                HStack(alignment: .center) {
+                    
+                    Text("4.8")
+                        .font(.system(size: 40, weight: .bold))
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing) {
+                        HStack(spacing: 2) {
+                            ForEach(0..<5) { _ in
+                                Image(systemName: "star.fill")
+                                    .foregroundColor(.black)
+                            }
+                        }
+                        
+                        Text("667K Ratings")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                // Breakdown Card
+                VStack(spacing: 8) {
+                    
+                    Text("User Reviews")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    ForEach([5,4,3,2,1], id: \.self) { star in
+                        HStack {
+                            Text("\(star)")
+                                .frame(width: 10)
+                            
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.yellow)
+                            
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    Capsule()
+                                        .fill(Color.gray.opacity(0.2))
+                                    
+                                    Capsule()
+                                        .fill(Color.yellow)
+                                        .frame(width: geo.size.width * percentage(for: star))
+                                }
+                            }
+                            .frame(height: 8)
+                            
+                            Text("\(Int(percentage(for: star) * 100))%")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .frame(width: 40)
+                        }
+                    }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                
+                // Tap to Rate
+                VStack(spacing: 5) {
+                    Text("Tap to Rate")
+                        .font(.subheadline)
+                    
+                    HStack(spacing: 10) {
+                        ForEach(1...5, id: \.self) { star in
+                            Image(systemName: "star")
+                                .font(.title3)
+                                .foregroundColor(.blue)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
             }
+            .padding(.horizontal)
             
             Spacer()
         }

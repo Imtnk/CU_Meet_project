@@ -72,6 +72,7 @@ struct RoomMapView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .shadow(radius: 5)
             .padding(.horizontal)
+            .padding(.top,5)
             
             // Controls
             HStack(spacing: 10) {
@@ -134,7 +135,7 @@ struct RoomMapView: View {
         }
         .sheet(item: $selectedRoom) { room in
             RoomDetailSheet(room: room)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
         .navigationTitle("Select Room")
