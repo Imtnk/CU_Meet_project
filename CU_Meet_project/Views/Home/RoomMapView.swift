@@ -11,7 +11,6 @@ import MapKit
 struct RoomMapView: View {
     
     @StateObject private var viewModel = HomeViewModel()
-    @State private var selectedRoom: MeetingRoom? = nil
     @State private var recentRooms: [MeetingRoom] = []
     
     private func addToRecent(_ room: MeetingRoom) {
@@ -33,20 +32,14 @@ struct RoomMapView: View {
             // Map Card
             Map(
                 position: Binding(
-                    get: {
-                        viewModel.position
-                    },
-                    set: { newValue in
-                        // Just ignore updates here
-                    }
+                    get: { viewModel.position },
+                    set: { _ in }
                 )
             ) {
                 ForEach(rooms) { room in
                     Annotation(room.name, coordinate: room.coordinate) {
-                        Button {
-                            selectedRoom = room
-                            addToRecent(room)
-                        } label: {
+                        
+                        NavigationLink(destination: RoomDetailView(room: room)) {
                             Image(systemName: "mappin.circle.fill")
                                 .resizable()
                                 .frame(width: viewModel.pinSize, height: viewModel.pinSize)
@@ -54,6 +47,9 @@ struct RoomMapView: View {
                                 .animation(.easeInOut(duration: 0.2), value: viewModel.pinSize)
                                 .shadow(radius: 3)
                         }
+                        .simultaneousGesture(TapGesture().onEnded {
+                            addToRecent(room)
+                        })
                     }
                 }
             }
@@ -62,7 +58,7 @@ struct RoomMapView: View {
                 viewModel.region = context.region
                 viewModel.clampRegion()
             }
-            .onAppear { // to fix mismatched default zoom
+            .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     viewModel.resetView()
                 }
@@ -72,7 +68,7 @@ struct RoomMapView: View {
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .shadow(radius: 5)
             .padding(.horizontal)
-            .padding(.top,5)
+            .padding(.top, 5)
             
             // Controls
             HStack(spacing: 10) {
@@ -86,7 +82,7 @@ struct RoomMapView: View {
                         Image(systemName: "minus.magnifyingglass")
                     }
                     
-                    Button(action: {viewModel.resetView()}) {
+                    Button(action: { viewModel.resetView() }) {
                         Image(systemName: "arrow.clockwise")
                     }
                 }
@@ -95,21 +91,25 @@ struct RoomMapView: View {
             .padding()
             
             // Recent
-            if !recentRooms.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
+                
+                Text("Recent")
+                    .font(.headline)
+                    .padding(.horizontal)
+                
+                VStack(spacing: 8) {
                     
-                    Text("Recent")
-                        .font(.headline)
-                        .padding(.horizontal)
-                    
-                    VStack(spacing: 8) {
+                    if recentRooms.isEmpty {
+                        Text("No recent rooms")
+                            .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 20)
+                    } else {
                         ForEach(recentRooms) { room in
-                            Button {
-                                selectedRoom = room
-                            } label: {
+                            
+                            NavigationLink(destination: RoomDetailView(room: room)) {
                                 HStack {
                                     Text(room.name)
-                                        .font(.body)
                                         .foregroundColor(.primary)
                                     
                                     Spacer()
@@ -124,25 +124,23 @@ struct RoomMapView: View {
                             }
                         }
                     }
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
-                .padding(.bottom, 10)
+                .padding()
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
+            .padding(.bottom, 10)
+            .padding(.bottom, 10)
             
             Spacer()
-        }
-        .sheet(item: $selectedRoom) { room in
-            RoomDetailSheet(room: room)
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
         }
         .navigationTitle("Select Room")
     }
 }
 
 #Preview {
-    RoomMapView()
+    NavigationStack {
+        RoomMapView()
+    }
 }
 
