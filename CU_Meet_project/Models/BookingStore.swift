@@ -31,6 +31,10 @@ class BookingStore: ObservableObject {
     func addBooking(_ booking: Booking) {
         bookings.append(booking)
     }
+    
+    func removeBooking(_ booking: Booking) {
+            bookings.removeAll { $0.id == booking.id }
+        }
 
     func upcomingBookings() -> [Booking] {
         bookings

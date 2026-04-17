@@ -69,6 +69,7 @@ struct HomeView: View {
                         NavigationLink(
                             destination: BookingDetailView(booking: booking)
                                 .environmentObject(groupStore)
+                                .environmentObject(bookingStore)
                         ) {
                             
                             HStack {
@@ -82,7 +83,6 @@ struct HomeView: View {
                                     Text(booking.roomName)
                                         .font(.caption)
                                         .foregroundColor(.gray)
-
                                 }
                                 
                                 Spacer()
@@ -96,9 +96,7 @@ struct HomeView: View {
                                     Text(formattedDateShort(booking.date))
                                         .font(.subheadline)
                                         .foregroundColor(.gray)
-                                    
                                 }
-                               
                             }
                             .padding()
                             .frame(maxWidth: .infinity)

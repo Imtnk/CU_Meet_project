@@ -14,6 +14,10 @@ struct BookingDetailView: View {
     
     @EnvironmentObject var groupStore: GroupStore
     
+    @EnvironmentObject var bookingStore: BookingStore
+    @Environment(\.dismiss) var dismiss
+    @State private var showCancelAlert = false
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -64,8 +68,34 @@ struct BookingDetailView: View {
                         Text("Group not found")
                             .foregroundColor(.gray)
                     }
+                    
+                    if booking.date >= Calendar.current.startOfDay(for: Date()) {
+                            
+                            Button("Cancel Booking") {
+                                showCancelAlert = true
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.red)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .padding(.top)
+                        }
+                    
                 }
                 .padding()
+                .alert("Cancel Booking?", isPresented: $showCancelAlert) {
+                    
+                    Button("Delete", role: .destructive) {
+                        bookingStore.removeBooking(booking)
+                        dismiss()
+                    }
+                    
+                    Button("Keep", role: .cancel) { }
+                    
+                } message: {
+                    Text("This action cannot be undone.")
+                }
             }
         }
         .navigationTitle("Booking Details")
