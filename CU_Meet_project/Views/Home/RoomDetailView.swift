@@ -159,6 +159,7 @@ struct RoomDetailView: View {
             DatePicker(
                 "Select Date",
                 selection: $selectedDate,
+                in: Date.now...,
                 displayedComponents: .date
             )
             
@@ -177,14 +178,10 @@ struct RoomDetailView: View {
                 
                 ForEach(timeSlots, id: \.self) { slot in
                     
-                    let isBooked = bookingStore.isBooked(
-                        roomID: room.id,
-                        date: selectedDate,
-                        timeSlot: slot
-                    )
+                    let isPast = isPastSlot(slot, on: selectedDate)
                     
                     Button {
-                        if !isBooked {
+                        if !isPast {
                             selectedTime = slot
                         }
                     } label: {
@@ -192,16 +189,18 @@ struct RoomDetailView: View {
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(
-                                isBooked ? Color.gray.opacity(0.3) :
-                                (selectedTime == slot ? Color.blue : Color(.systemGray5))
+                                isPast
+                                ? Color.gray.opacity(0.3)
+                                : (selectedTime == slot ? Color.blue : Color(.systemGray5))
                             )
                             .foregroundColor(
-                                isBooked ? .gray :
-                                (selectedTime == slot ? .white : .primary)
+                                isPast
+                                ? .gray
+                                : (selectedTime == slot ? .white : .primary)
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
-                    .disabled(isBooked)
+                    .disabled(isPast)
                 }
             }
             
@@ -267,5 +266,40 @@ struct RoomDetailView: View {
             return "Choose a group"
         }
         return groupStore.groupName(for: id)
+    }
+    
+    private func isPastSlot(_ slot: String, on date: Date) -> Bool {
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        
+        guard let startTimeString = slot.split(separator: "-").first else { return false }
+        
+        let trimmed = startTimeString.trimmingCharacters(in: .whitespaces)
+        
+        guard let slotTime = formatter.date(from: trimmed) else { return false }
+        
+        let calendar = Calendar.current
+        
+        let slotComponents = calendar.dateComponents([.hour, .minute], from: slotTime)
+        let selectedComponents = calendar.dateComponents([.year, .month, .day], from: date)
+        
+        guard
+            let hour = slotComponents.hour,
+            let minute = slotComponents.minute,
+            let year = selectedComponents.year,
+            let month = selectedComponents.month,
+            let day = selectedComponents.day
+        else { return false }
+        
+        let combined = calendar.date(from: DateComponents(
+            year: year,
+            month: month,
+            day: day,
+            hour: hour,
+            minute: minute
+        )) ?? Date()
+        
+        return combined < Date()
     }
 }
