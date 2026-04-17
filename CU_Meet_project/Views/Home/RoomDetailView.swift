@@ -16,10 +16,10 @@ struct RoomDetailView: View {
     
     @State private var selectedDate = Date()
     @State private var selectedTime: String? = nil
-    @State private var showBookingAlert = false
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var groupStore: GroupStore
     @State private var selectedGroupID: UUID? = nil
+    @State private var showConfirmationSheet = false
     
     private let timeSlots = [
         "09:00 - 10:00",
@@ -70,10 +70,15 @@ struct RoomDetailView: View {
         } message: {
             Text("You rated this room \(userRating) star\(userRating > 1 ? "s" : "")")
         }
-        .alert("Booking Confirmed", isPresented: $showBookingAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("Room booked on \(formattedDate) at \(selectedTime ?? "")")
+        .sheet(isPresented: $showConfirmationSheet) {
+            BookingConfirmationView(
+                room: room,
+                selectedDate: selectedDate,
+                selectedTime: selectedTime!,
+                groupID: selectedGroupID!
+            )
+            .environmentObject(bookingStore)
+            .environmentObject(groupStore)
         }
     }
     private var ratingSection: some View {
@@ -199,20 +204,7 @@ struct RoomDetailView: View {
             let isDisabled = selectedTime == nil || selectedGroupID == nil
 
             Button {
-                guard let selectedTime,
-                      let groupID = selectedGroupID else { return }
-                
-                let booking = Booking(
-                    roomID: room.id,
-                    roomName: room.name,
-                    groupID: groupID,
-                    date: selectedDate,
-                    timeSlot: selectedTime
-                )
-                
-                bookingStore.addBooking(booking)
-                showBookingAlert = true
-                
+                showConfirmationSheet = true
             } label: {
                 Text("Reserve Room")
                     .frame(maxWidth: .infinity)
