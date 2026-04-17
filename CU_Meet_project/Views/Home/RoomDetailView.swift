@@ -196,6 +196,8 @@ struct RoomDetailView: View {
                 }
             }
             
+            let isDisabled = selectedTime == nil || selectedGroupID == nil
+
             Button {
                 guard let selectedTime,
                       let groupID = selectedGroupID else { return }
@@ -215,16 +217,13 @@ struct RoomDetailView: View {
                 Text("Reserve Room")
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(selectedTime == nil ? Color.gray : Color.blue)
+                    .background(isDisabled ? Color.gray : Color.blue)
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-            .disabled(selectedTime == nil || selectedGroupID == nil)
-            .background(
-                (selectedTime == nil || selectedGroupID == nil)
-                ? Color.gray
-                : Color.blue
-            )
+            .disabled(isDisabled)
+            .background(selectedTime == nil ? Color.gray : Color.blue)
+            .cornerRadius(15)
             
         }
     }
