@@ -46,4 +46,6 @@ struct MainTabView: View {
 
 #Preview {
     MainTabView()
+        .environmentObject(BookingStore())
+        .environmentObject(GroupStore())
 }

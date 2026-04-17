@@ -9,9 +9,15 @@ import SwiftUI
 
 @main
 struct CU_Meet_projectApp: App {
+    
+    @StateObject private var bookingStore = BookingStore()
+    @StateObject private var groupStore = GroupStore()
+    
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            HomeView()
+                .environmentObject(bookingStore)
+                .environmentObject(groupStore)
         }
     }
 }
