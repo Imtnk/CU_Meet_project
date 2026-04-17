@@ -11,18 +11,26 @@ import Combine
 struct Group: Identifiable, Equatable {
     let id = UUID()
     let name: String
-    let memberCount: Int
+    let members: [String]
+    
+    var memberCount: Int {
+        members.count
+    }
 }
 
 class GroupStore: ObservableObject {
     
     @Published var groups: [Group] = [
-        Group(name: "AI Study Group", memberCount: 5),
-        Group(name: "Project Team Alpha", memberCount: 3),
-        Group(name: "UX Research Group", memberCount: 4)
+        Group(name: "AI Study Group", members: ["Alice", "Bob", "Charlie"]),
+        Group(name: "Project Team Alpha", members: ["John", "Emma"]),
+        Group(name: "UX Research Group", members: ["Mike", "Sarah", "Tom"])
     ]
     
+    func group(for id: UUID) -> Group? {
+        groups.first(where: { $0.id == id })
+    }
+    
     func groupName(for id: UUID) -> String {
-        groups.first(where: { $0.id == id })?.name ?? "Unknown Group"
+        group(for: id)?.name ?? "Unknown Group"
     }
 }

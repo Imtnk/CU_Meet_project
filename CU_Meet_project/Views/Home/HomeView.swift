@@ -66,26 +66,47 @@ struct HomeView: View {
                 VStack(spacing: 12) {
                     ForEach(Array(bookings)) { booking in
                         
-                        HStack{
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(groupStore.groupName(for: booking.groupID))
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
+                        NavigationLink(
+                            destination: BookingDetailView(booking: booking)
+                                .environmentObject(groupStore)
+                        ) {
+                            
+                            HStack {
                                 
-                                Text(booking.roomName)
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
+                                VStack(alignment: .leading, spacing: 6) {
+                                    
+                                    Text(groupStore.groupName(for: booking.groupID))
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                    
+                                    Text(booking.roomName)
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+
+                                }
+                                
+                                Spacer()
+                                
+                                VStack(alignment: .trailing, spacing: 6){
+                                    
+                                    Text(booking.timeSlot)
+                                        .font(.subheadline)
+                                        .foregroundColor(.blue)
+                                    
+                                    Text(formattedDateShort(booking.date))
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                    
+                                }
+                               
                             }
-                            Spacer()
-                            Text(booking.timeSlot)
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 70)
+                            .background(Color(.systemGray6))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 70)
-                        .background(Color(.systemGray6))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .buttonStyle(.plain)
                     }
                 }
             }
