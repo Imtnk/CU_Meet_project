@@ -19,6 +19,7 @@ struct RoomDetailView: View {
     @State private var showBookingAlert = false
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var groupStore: GroupStore
+    @State private var selectedGroupID: UUID? = nil
     
     private let timeSlots = [
         "09:00 - 10:00",
@@ -152,6 +153,14 @@ struct RoomDetailView: View {
                 displayedComponents: .date
             )
             
+            groupPickerSection
+            
+            if let id = selectedGroupID {
+                Text("Members: \(groupStore.groups.first(where: { $0.id == id })?.memberCount ?? 0)")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            
             Text("Select Time Slot")
                 .font(.subheadline)
             
@@ -188,21 +197,20 @@ struct RoomDetailView: View {
             }
             
             Button {
-                guard let selectedTime else { return }
+                guard let selectedTime,
+                      let groupID = selectedGroupID else { return }
                 
-                let mockGroupID = groupStore.groups.randomElement()?.id ?? groupStore.groups.first!.id
-
                 let booking = Booking(
                     roomID: room.id,
                     roomName: room.name,
-                    groupID: mockGroupID,
+                    groupID: groupID,
                     date: selectedDate,
                     timeSlot: selectedTime
                 )
                 
                 bookingStore.addBooking(booking)
-                
                 showBookingAlert = true
+                
             } label: {
                 Text("Reserve Room")
                     .frame(maxWidth: .infinity)
@@ -211,13 +219,58 @@ struct RoomDetailView: View {
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-            .disabled(selectedTime == nil)
+            .disabled(selectedTime == nil || selectedGroupID == nil)
+            .background(
+                (selectedTime == nil || selectedGroupID == nil)
+                ? Color.gray
+                : Color.blue
+            )
             
         }
     }
+    
     private var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: selectedDate)
+    }
+    
+    private var groupPickerSection: some View {
+        
+        VStack(alignment: .leading, spacing: 10) {
+            
+            Text("Select Group")
+                .font(.headline)
+            
+            Menu {
+                ForEach(groupStore.groups) { group in
+                    Button {
+                        selectedGroupID = group.id
+                    } label: {
+                        Text(group.name)
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(selectedGroupName)
+                        .foregroundColor(selectedGroupID == nil ? .gray : .primary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.down")
+                        .foregroundColor(.gray)
+                }
+                .padding()
+                .background(Color(.systemGray5))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+        }
+    }
+    
+    private var selectedGroupName: String {
+        guard let id = selectedGroupID else {
+            return "Choose a group"
+        }
+        return groupStore.groupName(for: id)
     }
 }
