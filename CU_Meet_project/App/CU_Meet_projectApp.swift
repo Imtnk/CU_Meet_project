@@ -15,7 +15,7 @@ struct CU_Meet_projectApp: App {
     
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            MainTabView()
                 .environmentObject(bookingStore)
                 .environmentObject(groupStore)
         }

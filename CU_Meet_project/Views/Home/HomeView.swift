@@ -42,7 +42,7 @@ struct HomeView: View {
     
     private var upcomingSection: some View {
         
-        let bookings = bookingStore.bookings
+        let bookings = bookingStore.upcomingBookings().prefix(5)
             .filter { $0.date >= Calendar.current.startOfDay(for: Date()) }
             .sorted {
                 if Calendar.current.isDate($0.date, inSameDayAs: $1.date) {

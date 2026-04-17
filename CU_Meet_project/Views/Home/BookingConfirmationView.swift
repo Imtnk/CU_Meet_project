@@ -19,6 +19,7 @@ struct BookingConfirmationView: View {
     @EnvironmentObject var groupStore: GroupStore
     
     @Environment(\.dismiss) var dismiss
+    let onComplete: () -> Void
     
     var body: some View {
         VStack(spacing: 20) {
@@ -87,7 +88,7 @@ struct BookingConfirmationView: View {
                     
                     bookingStore.addBooking(booking)
                     
-                    dismiss()
+                    onComplete() 
                 }
                 .frame(maxWidth: .infinity)
                 .padding()

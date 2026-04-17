@@ -20,6 +20,7 @@ struct RoomDetailView: View {
     @EnvironmentObject var groupStore: GroupStore
     @State private var selectedGroupID: UUID? = nil
     @State private var showConfirmationSheet = false
+    @Environment(\.dismiss) var dismiss
     
     private let timeSlots = [
         "09:00 - 10:00",
@@ -75,7 +76,10 @@ struct RoomDetailView: View {
                 room: room,
                 selectedDate: selectedDate,
                 selectedTime: selectedTime!,
-                groupID: selectedGroupID!
+                groupID: selectedGroupID!,
+                onComplete: {
+                    dismiss() // go back to Map
+                }
             )
             .environmentObject(bookingStore)
             .environmentObject(groupStore)

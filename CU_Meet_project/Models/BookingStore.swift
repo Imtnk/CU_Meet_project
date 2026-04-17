@@ -8,6 +8,11 @@
 import Foundation
 import Combine
 
+enum BookingStatus {
+    case active
+    case cancelled
+}
+
 struct Booking: Identifiable, Equatable {
     let id = UUID()
     let roomID: UUID
@@ -15,6 +20,8 @@ struct Booking: Identifiable, Equatable {
     let groupID: UUID
     let date: Date
     let timeSlot: String
+    
+    var status: BookingStatus = .active
 }
 
 class BookingStore: ObservableObject {
@@ -32,13 +39,18 @@ class BookingStore: ObservableObject {
         bookings.append(booking)
     }
     
-    func removeBooking(_ booking: Booking) {
-            bookings.removeAll { $0.id == booking.id }
+    func cancelBooking(_ booking: Booking) {
+        if let index = bookings.firstIndex(where: { $0.id == booking.id }) {
+            bookings[index].status = .cancelled
         }
+    }
 
     func upcomingBookings() -> [Booking] {
         bookings
-            .filter { $0.date >= Calendar.current.startOfDay(for: Date()) }
+            .filter {
+                $0.status == .active &&
+                $0.date >= Calendar.current.startOfDay(for: Date())
+            }
             .sorted {
                 if Calendar.current.isDate($0.date, inSameDayAs: $1.date) {
                     return $0.timeSlot < $1.timeSlot
