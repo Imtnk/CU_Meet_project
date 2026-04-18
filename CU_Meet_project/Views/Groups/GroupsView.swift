@@ -14,6 +14,8 @@ struct GroupsView: View {
     @State private var showCreate = false
     @State private var showJoin = false
     
+    @State private var showLeaveAlert = false
+    
     var body: some View {
         NavigationStack {
             
@@ -27,18 +29,44 @@ struct GroupsView: View {
                     Text("No groups yet")
                         .foregroundColor(.gray)
                 } else {
-                    List(groupStore.myGroups) { group in
-                        VStack(alignment: .leading) {
-                            Text(group.name)
-                                .font(.headline)
-                            
-                            Text("Code: \(group.joinCode)")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                            
-                            Text("\(group.memberCount) members")
-                                .font(.caption2)
-                                .foregroundColor(.gray)
+                    HStack{
+                        List(groupStore.myGroups) { group in
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(group.name)
+                                        .font(.title2)
+                                    
+                                    Text("Code: \(group.joinCode)")
+                                        .font(.headline)
+                                        .foregroundColor(.gray)
+                                    
+                                    Text("\(group.memberCount) members")
+                                        .font(.caption2)
+                                        .foregroundColor(.gray)
+                                }
+                                Spacer()
+                                Button(role: .destructive) {
+                                    showLeaveAlert = true
+                                } label: {
+                                    Text("Leave Group")
+                                        .font(.headline)
+                                        .padding()
+                                        .background(Color.red)
+                                        .foregroundColor(.white)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                }
+                                .alert("Leave Group?", isPresented: $showLeaveAlert) {
+                                    
+                                    Button("Leave", role: .destructive) {
+                                        groupStore.leaveGroup(groupID: group.id)
+                                    }
+                                    
+                                    Button("Cancel", role: .cancel) { }
+                                    
+                                } message: {
+                                    Text("You will be removed from this group.")
+                                }
+                            }
                         }
                     }
                 }

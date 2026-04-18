@@ -68,11 +68,14 @@ class GroupStore: ObservableObject {
     }
     
     func leaveGroup(groupID: UUID, userName: String = "You") {
-        guard let index = groups.firstIndex(where: { $0.id == groupID }) else {
-            return
-        }
+        guard let index = groups.firstIndex(where: { $0.id == groupID }) else { return }
         
         groups[index].members.removeAll { $0 == userName }
+        
+        // remove group if empty
+        if groups[index].members.isEmpty {
+            groups.remove(at: index)
+        }
     }
     
     func groupName(for id: UUID) -> String {
