@@ -8,14 +8,83 @@
 import SwiftUI
 
 struct GroupsView: View {
+    
+    @EnvironmentObject var groupStore: GroupStore
+    
+    @State private var showCreate = false
+    @State private var showJoin = false
+    
     var body: some View {
         NavigationStack {
-            Text("Groups View")
-                .navigationTitle("Groups")
+            
+            Spacer()
+            VStack(spacing: 20) {
+                
+                Text("Your Groups")
+                    .font(.title)
+                
+                if groupStore.myGroups.isEmpty {
+                    Text("No groups yet")
+                        .foregroundColor(.gray)
+                } else {
+                    List(groupStore.myGroups) { group in
+                        VStack(alignment: .leading) {
+                            Text(group.name)
+                                .font(.headline)
+                            
+                            Text("Code: \(group.joinCode)")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                            
+                            Text("\(group.memberCount) members")
+                                .font(.caption2)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                }
+                
+                Spacer()
+                
+                VStack(spacing: 12) {
+                    
+                    Button {
+                        showCreate = true
+                    } label: {
+                        Text("Create Group")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    
+                    Button {
+                        showJoin = true
+                    } label: {
+                        Text("Join Group")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle("Groups")
+            .sheet(isPresented: $showCreate) {
+                CreateGroupView()
+                    .environmentObject(groupStore)
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showJoin) {
+                JoinGroupView()
+                    .environmentObject(groupStore)
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
+            }
         }
     }
 }
 
-#Preview {
-    GroupsView()
-}

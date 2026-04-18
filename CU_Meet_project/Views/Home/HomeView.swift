@@ -19,7 +19,6 @@ struct HomeView: View {
                 Text("CU Meet").font(.title)
                 Image("logo_meet").resizable().scaledToFill().frame(width: 200, height: 200).cornerRadius(75).shadow(radius: 3)
                 NavigationLink(destination: RoomMapView()
-                    .environmentObject(bookingStore)
                 ) {
                     Text("Book Now")
                         .font(.title2)
@@ -68,8 +67,6 @@ struct HomeView: View {
                         
                         NavigationLink(
                             destination: BookingDetailView(booking: booking)
-                                .environmentObject(groupStore)
-                                .environmentObject(bookingStore)
                         ) {
                             
                             HStack {

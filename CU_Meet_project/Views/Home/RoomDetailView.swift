@@ -72,17 +72,21 @@ struct RoomDetailView: View {
             Text("You rated this room \(userRating) star\(userRating > 1 ? "s" : "")")
         }
         .sheet(isPresented: $showConfirmationSheet) {
-            BookingConfirmationView(
-                room: room,
-                selectedDate: selectedDate,
-                selectedTime: selectedTime!,
-                groupID: selectedGroupID!,
-                onComplete: {
-                    dismiss() // go back to Map
-                }
-            )
-            .environmentObject(bookingStore)
-            .environmentObject(groupStore)
+            if let time = selectedTime,
+               let groupID = selectedGroupID {
+                
+                BookingConfirmationView(
+                    room: room,
+                    selectedDate: selectedDate,
+                    selectedTime: time,
+                    groupID: groupID,
+                    onComplete: {
+                        dismiss()
+                    }
+                )
+                .environmentObject(bookingStore)
+                .environmentObject(groupStore)
+            }
         }
     }
     private var ratingSection: some View {
@@ -166,7 +170,7 @@ struct RoomDetailView: View {
             groupPickerSection
             
             if let id = selectedGroupID {
-                Text("Members: \(groupStore.groups.first(where: { $0.id == id })?.memberCount ?? 0)")
+                Text("Members: \(groupStore.myGroups.first(where: { $0.id == id })?.memberCount ?? 0)")
                     .font(.caption)
                     .foregroundColor(.gray)
             }
@@ -205,20 +209,19 @@ struct RoomDetailView: View {
                     .disabled(unavailable)
                 }
             }
-            
-            let isDisabled = selectedTime == nil || selectedGroupID == nil
 
             Button {
+                guard canProceed else { return }
                 showConfirmationSheet = true
             } label: {
                 Text("Reserve Room")
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(isDisabled ? Color.gray : Color.blue)
+                    .background(canProceed ? Color.blue : Color.gray)
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-            .disabled(isDisabled)
+            .disabled(!canProceed)
             .background(selectedTime == nil ? Color.gray : Color.blue)
             .cornerRadius(15)
             
@@ -235,11 +238,11 @@ struct RoomDetailView: View {
         
         VStack(alignment: .leading, spacing: 10) {
             
-            Text("Select Group")
+            Text("Select Group *")
                 .font(.headline)
             
             Menu {
-                ForEach(groupStore.groups) { group in
+                ForEach(groupStore.myGroups) { group in
                     Button {
                         selectedGroupID = group.id
                     } label: {
@@ -259,6 +262,17 @@ struct RoomDetailView: View {
                 .padding()
                 .background(Color(.systemGray5))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+            
+            if selectedGroupID == nil {
+                Text("Required to continue booking")
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+            if groupStore.myGroups.isEmpty {
+                Text("Join or create a group to book")
+                    .font(.caption)
+                    .foregroundColor(.red)
             }
         }
     }
@@ -311,5 +325,9 @@ struct RoomDetailView: View {
             date: selectedDate,
             timeSlot: slot
         )
+    }
+    
+    private var canProceed: Bool {
+        selectedTime != nil && selectedGroupID != nil
     }
 }

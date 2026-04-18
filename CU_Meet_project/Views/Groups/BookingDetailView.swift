@@ -18,6 +18,7 @@ struct BookingDetailView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showCancelAlert = false
     
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -45,28 +46,32 @@ struct BookingDetailView: View {
                     Divider()
                     
                     // Group Info
-                    Text("Group")
-                        .font(.headline).bold()
-                    
-                    if let group = groupStore.group(for: booking.groupID) {
-                        
-                        Text(group.name)
+                    VStack(alignment: .leading, spacing: 8) {
+
+                        Text("Group")
                             .font(.headline)
-                            .fontWeight(.semibold)
-                        
-                        Text("Members")
-                            .font(.headline)
-                            .padding(.top, 5)
-                        
-                        ForEach(group.members, id: \.self) { member in
-                            Text("• \(member)")
-                                .font(.subheadline)
+                            .bold()
+
+                        if let group = currentGroup {
+                            
+                            Text(group.name)
+                                .font(.headline)
+                                .fontWeight(.semibold)
+
+                            Text("Members")
+                                .font(.headline)
+                                .padding(.top, 5)
+
+                            ForEach(group.members, id: \.self) { member in
+                                Text("• \(member)")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            }
+
+                        } else {
+                            Text("Group not found")
                                 .foregroundColor(.gray)
                         }
-                        
-                    } else {
-                        Text("Group not found")
-                            .foregroundColor(.gray)
                     }
                     
                     if booking.date >= Calendar.current.startOfDay(for: Date()) {
@@ -106,5 +111,9 @@ struct BookingDetailView: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: date)
+    }
+    
+    private var currentGroup: Group? {
+        groupStore.groups.first { $0.id == booking.groupID }
     }
 }
