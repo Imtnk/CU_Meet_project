@@ -40,7 +40,7 @@ class GroupStore: ObservableObject {
         let group = Group(
             name: name,
             joinCode: code,
-            members: []
+            members: ["You"]
         )
         
         groups.append(group)

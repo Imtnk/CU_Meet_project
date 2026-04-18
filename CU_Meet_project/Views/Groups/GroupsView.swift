@@ -31,40 +31,21 @@ struct GroupsView: View {
                 } else {
                     HStack{
                         List(groupStore.myGroups) { group in
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(group.name)
-                                        .font(.title2)
-                                    
-                                    Text("Code: \(group.joinCode)")
-                                        .font(.headline)
-                                        .foregroundColor(.gray)
-                                    
-                                    Text("\(group.memberCount) members")
-                                        .font(.caption2)
-                                        .foregroundColor(.gray)
-                                }
-                                Spacer()
-                                Button(role: .destructive) {
-                                    showLeaveAlert = true
-                                } label: {
-                                    Text("Leave Group")
-                                        .font(.headline)
-                                        .padding()
-                                        .background(Color.red)
-                                        .foregroundColor(.white)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                }
-                                .alert("Leave Group?", isPresented: $showLeaveAlert) {
-                                    
-                                    Button("Leave", role: .destructive) {
-                                        groupStore.leaveGroup(groupID: group.id)
+                            NavigationLink(destination: GroupDetailView(group: group)) {
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(group.name)
+                                            .font(.title2)
+                                        
+                                        Text("Code: \(group.joinCode)")
+                                            .font(.headline)
+                                            .foregroundColor(.gray)
+                                        
+                                        Text("\(group.memberCount) members")
+                                            .font(.caption2)
+                                            .foregroundColor(.gray)
                                     }
-                                    
-                                    Button("Cancel", role: .cancel) { }
-                                    
-                                } message: {
-                                    Text("You will be removed from this group.")
+                                    Spacer()
                                 }
                             }
                         }
