@@ -178,10 +178,12 @@ struct RoomDetailView: View {
                 
                 ForEach(timeSlots, id: \.self) { slot in
                     
-                    let isPast = isPastSlot(slot, on: selectedDate)
+                    let past = isPastSlot(slot, on: selectedDate)
+                    let booked = isBooked(slot: slot)
+                    let unavailable = past || booked
                     
                     Button {
-                        if !isPast {
+                        if !unavailable {
                             selectedTime = slot
                         }
                     } label: {
@@ -189,18 +191,18 @@ struct RoomDetailView: View {
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(
-                                isPast
+                                unavailable
                                 ? Color.gray.opacity(0.3)
                                 : (selectedTime == slot ? Color.blue : Color(.systemGray5))
                             )
                             .foregroundColor(
-                                isPast
+                                unavailable
                                 ? .gray
                                 : (selectedTime == slot ? .white : .primary)
                             )
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
-                    .disabled(isPast)
+                    .disabled(unavailable)
                 }
             }
             
@@ -301,5 +303,13 @@ struct RoomDetailView: View {
         )) ?? Date()
         
         return combined < Date()
+    }
+    
+    private func isBooked(slot: String) -> Bool {
+        bookingStore.isBooked(
+            roomID: room.id,
+            date: selectedDate,
+            timeSlot: slot
+        )
     }
 }

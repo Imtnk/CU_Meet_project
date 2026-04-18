@@ -31,7 +31,8 @@ class BookingStore: ObservableObject {
         bookings.contains {
             $0.roomID == roomID &&
             Calendar.current.isDate($0.date, inSameDayAs: date) &&
-            $0.timeSlot == timeSlot
+            $0.timeSlot == timeSlot &&
+            $0.status == .active
         }
     }
     
