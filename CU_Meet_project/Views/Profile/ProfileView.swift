@@ -19,11 +19,23 @@ struct ProfileView: View {
                 if authManager.isLoggedIn {
                     // --- Logged In State ---
                     VStack(spacing: 15) {
-                        Image(systemName: "person.circle.fill")
-                            .resizable()
-                            .frame(width: 100, height: 100)
-                            .foregroundColor(.gray)
-                        
+                        AsyncImage(url: authManager.userProfile?.profile?.imageURL(withDimension: 200)) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable()
+                            case .empty, .failure:
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(.gray)
+                            @unknown default:
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                        .frame(width: 100, height: 100)
+                        .clipShape(Circle())
+
                         Text(authManager.userProfile?.profile?.name ?? "User Name")
                             .font(.title2)
                             .bold()
