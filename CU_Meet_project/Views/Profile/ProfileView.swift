@@ -11,7 +11,7 @@ import GoogleSignIn
 
 struct ProfileView: View {
     // Access the global auth state
-    @StateObject private var authManager = AuthManager()
+    @EnvironmentObject private var authManager: AuthManager
     
     var body: some View {
         NavigationStack {

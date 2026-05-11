@@ -48,4 +48,5 @@ struct MainTabView: View {
     MainTabView()
         .environmentObject(BookingStore())
         .environmentObject(GroupStore())
+        .environmentObject(AuthManager())
 }

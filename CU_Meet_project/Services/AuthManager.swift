@@ -14,10 +14,18 @@ class AuthManager: ObservableObject {
     @Published var isLoggedIn: Bool = false
     @Published var userProfile: GIDGoogleUser?
 
+    init() {
+        restorePreviousSignIn()
+    }
+
     func signIn() {
         guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else { return }
-        
+
         GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { result, error in
+            if let error = error {
+                print("Sign in failed: \(error.localizedDescription)")
+                return
+            }
             if let user = result?.user {
                 self.userProfile = user
                 self.isLoggedIn = true
@@ -29,5 +37,14 @@ class AuthManager: ObservableObject {
         GIDSignIn.sharedInstance.signOut()
         self.isLoggedIn = false
         self.userProfile = nil
+    }
+
+    private func restorePreviousSignIn() {
+        guard GIDSignIn.sharedInstance.hasPreviousSignIn() else { return }
+        GIDSignIn.sharedInstance.restorePreviousSignIn { [weak self] user, _ in
+            guard let self, let user else { return }
+            self.userProfile = user
+            self.isLoggedIn = true
+        }
     }
 }

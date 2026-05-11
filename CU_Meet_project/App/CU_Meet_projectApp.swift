@@ -13,18 +13,20 @@ struct CU_Meet_projectApp: App {
     
     @StateObject private var bookingStore = BookingStore()
     @StateObject private var groupStore = GroupStore()
-    
+    @StateObject private var authManager = AuthManager()
+
     init() {
             // Replace with your actual Client ID from Google Console
             let config = GIDConfiguration(clientID: "71930476155-qrkic6shoev6tuutc1ot1fhi08nnim76.apps.googleusercontent.com")
             GIDSignIn.sharedInstance.configuration = config
     }
-    
+
     var body: some Scene {
         WindowGroup {
             MainTabView()
                 .environmentObject(bookingStore)
                 .environmentObject(groupStore)
+                .environmentObject(authManager)
                 .onOpenURL { url in
                                     GIDSignIn.sharedInstance.handle(url)
                                 }
