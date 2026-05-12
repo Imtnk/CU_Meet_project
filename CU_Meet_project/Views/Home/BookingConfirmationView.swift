@@ -77,7 +77,6 @@ struct BookingConfirmationView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 
                 Button("Confirm") {
-                    
                     let booking = Booking(
                         id: UUID().uuidString,
                         roomID: room.id,
@@ -86,10 +85,10 @@ struct BookingConfirmationView: View {
                         date: selectedDate,
                         timeSlot: selectedTime
                     )
-                    
-                    bookingStore.addBooking(booking)
-                    
-                    onComplete() 
+                    Task {
+                        try? await bookingStore.addBooking(booking)
+                        onComplete()
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .padding()

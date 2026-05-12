@@ -93,8 +93,10 @@ struct BookingDetailView: View {
                 .alert("Cancel Booking?", isPresented: $showCancelAlert) {
                     
                     Button("Delete", role: .destructive) {
-                        bookingStore.cancelBooking(booking)
-                        dismiss()
+                        Task {
+                            try? await bookingStore.cancelBooking(booking)
+                            dismiss()
+                        }
                     }
                     
                     Button("Keep", role: .cancel) { }

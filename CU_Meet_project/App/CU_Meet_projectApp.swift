@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseCore
 import GoogleSignIn
 
 @main
@@ -17,6 +18,8 @@ struct CU_Meet_projectApp: App {
     @StateObject private var authManager: AuthManager
 
     init() {
+        FirebaseApp.configure()
+
         let config = GIDConfiguration(clientID: "71930476155-qrkic6shoev6tuutc1ot1fhi08nnim76.apps.googleusercontent.com")
         GIDSignIn.sharedInstance.configuration = config
 

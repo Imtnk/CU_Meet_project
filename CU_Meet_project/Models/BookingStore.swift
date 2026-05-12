@@ -2,11 +2,10 @@
 //  BookingStore.swift
 //  CU_Meet_project
 //
-//  Created by Imtnk on 17/4/2569 BE.
-//
 
 import Foundation
 import Combine
+import FirebaseFirestore
 
 enum BookingStatus: String, Codable {
     case active
@@ -20,12 +19,21 @@ struct Booking: Identifiable, Codable, Equatable {
     let groupID: String
     let date: Date
     let timeSlot: String
-
     var status: BookingStatus = .active
 }
 
 class BookingStore: ObservableObject {
+
     @Published var bookings: [Booking] = []
+    private var listener: ListenerRegistration?
+
+    init() {
+        listener = FirestoreService.shared.listenToBookings { [weak self] bookings in
+            self?.bookings = bookings
+        }
+    }
+
+    deinit { listener?.remove() }
 
     func isBooked(roomID: String, date: Date, timeSlot: String) -> Bool {
         bookings.contains {
@@ -36,14 +44,12 @@ class BookingStore: ObservableObject {
         }
     }
 
-    func addBooking(_ booking: Booking) {
-        bookings.append(booking)
+    func addBooking(_ booking: Booking) async throws {
+        try await FirestoreService.shared.addBooking(booking)
     }
 
-    func cancelBooking(_ booking: Booking) {
-        if let index = bookings.firstIndex(where: { $0.id == booking.id }) {
-            bookings[index].status = .cancelled
-        }
+    func cancelBooking(_ booking: Booking) async throws {
+        try await FirestoreService.shared.updateBookingStatus(id: booking.id, status: .cancelled)
     }
 
     func upcomingBookings() -> [Booking] {

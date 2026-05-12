@@ -9,6 +9,7 @@
 import Foundation
 import GoogleSignIn
 import Combine
+import FirebaseFirestore
 
 class AuthManager: ObservableObject {
     @Published var isLoggedIn: Bool = false
@@ -61,5 +62,6 @@ class AuthManager: ObservableObject {
             photoURL: user.profile?.imageURL(withDimension: 256)?.absoluteString
         )
         userStore.upsert(appUser)
+        Task { try? await FirestoreService.shared.upsertUser(appUser) }
     }
 }

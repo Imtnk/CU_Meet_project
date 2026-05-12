@@ -36,7 +36,7 @@ struct RoomMapView: View {
                     set: { _ in }
                 )
             ) {
-                ForEach(rooms) { room in
+                ForEach(viewModel.rooms) { room in
                     Annotation(room.name, coordinate: room.coordinate) {
                         
                         NavigationLink(destination: RoomDetailView(room: room)) {
@@ -63,6 +63,7 @@ struct RoomMapView: View {
                     viewModel.resetView()
                 }
             }
+            .task { await viewModel.loadRooms() }
             .frame(height: 300)
             .background(Color(.systemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 20))

@@ -2,9 +2,6 @@
 //  GroupDetailView.swift
 //  CU_Meet_project
 //
-//  Created by Imtnk on 18/4/2569 BE.
-//
-
 
 import SwiftUI
 import GoogleSignIn
@@ -15,9 +12,9 @@ struct GroupDetailView: View {
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var userStore: UserStore
     @Environment(\.dismiss) var dismiss
-    
+
     @State private var showLeaveAlert = false
-    
+
     private var currentGroup: Group? {
         groupStore.groups.first(where: { $0.id == group.id })
     }
@@ -32,7 +29,6 @@ struct GroupDetailView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.blue)
                 }
-                
                 HStack {
                     Text("Total Members")
                     Spacer()
@@ -47,11 +43,10 @@ struct GroupDetailView: View {
                     }
                 }
             }
-            
+
             Section {
                 Button(role: .destructive) {
-                    groupStore.leaveGroup(groupID: group.id, userID: authManager.userProfile?.userID ?? "")
-                    dismiss()
+                    showLeaveAlert = true
                 } label: {
                     HStack {
                         Spacer()
@@ -61,13 +56,16 @@ struct GroupDetailView: View {
                 }
             }
             .alert("Leave Group?", isPresented: $showLeaveAlert) {
-                
                 Button("Leave", role: .destructive) {
-                    groupStore.leaveGroup(groupID: group.id, userID: authManager.userProfile?.userID ?? "")
+                    Task {
+                        try? await groupStore.leaveGroup(
+                            groupID: group.id,
+                            userID: authManager.userProfile?.userID ?? ""
+                        )
+                        dismiss()
+                    }
                 }
-                
                 Button("Cancel", role: .cancel) { }
-                
             } message: {
                 Text("You will be removed from this group.")
             }

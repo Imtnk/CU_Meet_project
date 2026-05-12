@@ -83,6 +83,12 @@ struct GroupsView: View {
                 .padding()
             }
             .navigationTitle("Groups")
+            .onAppear {
+                groupStore.startListening(for: authManager.userProfile?.userID ?? "")
+            }
+            .onChange(of: authManager.userProfile?.userID) { _, newID in
+                groupStore.startListening(for: newID ?? "")
+            }
             .sheet(isPresented: $showCreate) {
                 CreateGroupView()
                     .environmentObject(groupStore)

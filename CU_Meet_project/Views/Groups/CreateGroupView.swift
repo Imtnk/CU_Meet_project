@@ -2,58 +2,55 @@
 //  CreateGroupView.swift
 //  CU_Meet_project
 //
-//  Created by Imtnk on 18/4/2569 BE.
-//
-
 
 import SwiftUI
 import GoogleSignIn
 
 struct CreateGroupView: View {
-    
+
     @EnvironmentObject var groupStore: GroupStore
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) var dismiss
-    
+
     @State private var groupName = ""
     @State private var createdGroup: Group?
-    
+    @State private var isCreating = false
+
     var body: some View {
         VStack(spacing: 20) {
-            
+
             Text("Create Group")
                 .font(.title)
-            
+
             TextField("Group Name", text: $groupName)
                 .textFieldStyle(.roundedBorder)
                 .padding()
-            
+
             Button("Create") {
-                createdGroup = groupStore.createGroup(
-                    name: groupName,
-                    creatorID: authManager.userProfile?.userID ?? ""
-                )
+                isCreating = true
+                Task {
+                    createdGroup = try? await groupStore.createGroup(
+                        name: groupName,
+                        creatorID: authManager.userProfile?.userID ?? ""
+                    )
+                    isCreating = false
+                }
             }
-            .disabled(groupName.isEmpty)
-            
+            .disabled(groupName.isEmpty || isCreating)
+
             if let group = createdGroup {
-                
                 VStack(spacing: 10) {
                     Text("Group Created")
                         .font(.headline)
-                    
                     Text("Name: \(group.name)")
                     Text("Join Code: \(group.joinCode)")
                         .font(.title2)
                         .bold()
-                    
-                    Button("Done") {
-                        dismiss()
-                    }
+                    Button("Done") { dismiss() }
                 }
                 .padding()
             }
-            
+
             Spacer()
         }
         .padding()
