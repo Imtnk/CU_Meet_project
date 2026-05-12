@@ -7,10 +7,13 @@
 
 
 import SwiftUI
+import GoogleSignIn
 
 struct GroupDetailView: View {
     let group: Group
     @EnvironmentObject var groupStore: GroupStore
+    @EnvironmentObject var authManager: AuthManager
+    @EnvironmentObject var userStore: UserStore
     @Environment(\.dismiss) var dismiss
     
     @State private var showLeaveAlert = false
@@ -38,16 +41,16 @@ struct GroupDetailView: View {
             }
 
             Section(header: Text("Members")) {
-                if let members = currentGroup?.members {
-                    ForEach(members, id: \.self) { member in
-                        Label(member, systemImage: "person.circle")
+                if let memberIDs = currentGroup?.memberIDs {
+                    ForEach(memberIDs, id: \.self) { memberID in
+                        Label(userStore.displayName(for: memberID), systemImage: "person.circle")
                     }
                 }
             }
             
             Section {
                 Button(role: .destructive) {
-                    groupStore.leaveGroup(groupID: group.id)
+                    groupStore.leaveGroup(groupID: group.id, userID: authManager.userProfile?.userID ?? "")
                     dismiss()
                 } label: {
                     HStack {
@@ -60,7 +63,7 @@ struct GroupDetailView: View {
             .alert("Leave Group?", isPresented: $showLeaveAlert) {
                 
                 Button("Leave", role: .destructive) {
-                    groupStore.leaveGroup(groupID: group.id)
+                    groupStore.leaveGroup(groupID: group.id, userID: authManager.userProfile?.userID ?? "")
                 }
                 
                 Button("Cancel", role: .cancel) { }

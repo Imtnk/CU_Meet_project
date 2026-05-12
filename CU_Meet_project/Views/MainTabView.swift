@@ -45,8 +45,10 @@ struct MainTabView: View {
 }
 
 #Preview {
+    let userStore = UserStore()
     MainTabView()
         .environmentObject(BookingStore())
         .environmentObject(GroupStore())
-        .environmentObject(AuthManager())
+        .environmentObject(userStore)
+        .environmentObject(AuthManager(userStore: userStore))
 }

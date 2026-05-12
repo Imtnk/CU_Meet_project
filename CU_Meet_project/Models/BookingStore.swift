@@ -8,26 +8,26 @@
 import Foundation
 import Combine
 
-enum BookingStatus {
+enum BookingStatus: String, Codable {
     case active
     case cancelled
 }
 
-struct Booking: Identifiable, Equatable {
-    let id = UUID()
-    let roomID: UUID
+struct Booking: Identifiable, Codable, Equatable {
+    let id: String
+    let roomID: String
     let roomName: String
-    let groupID: UUID
+    let groupID: String
     let date: Date
     let timeSlot: String
-    
+
     var status: BookingStatus = .active
 }
 
 class BookingStore: ObservableObject {
     @Published var bookings: [Booking] = []
-    
-    func isBooked(roomID: UUID, date: Date, timeSlot: String) -> Bool {
+
+    func isBooked(roomID: String, date: Date, timeSlot: String) -> Bool {
         bookings.contains {
             $0.roomID == roomID &&
             Calendar.current.isDate($0.date, inSameDayAs: date) &&
@@ -35,11 +35,11 @@ class BookingStore: ObservableObject {
             $0.status == .active
         }
     }
-    
+
     func addBooking(_ booking: Booking) {
         bookings.append(booking)
     }
-    
+
     func cancelBooking(_ booking: Booking) {
         if let index = bookings.firstIndex(where: { $0.id == booking.id }) {
             bookings[index].status = .cancelled

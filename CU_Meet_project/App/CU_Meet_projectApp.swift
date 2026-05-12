@@ -10,15 +10,19 @@ import GoogleSignIn
 
 @main
 struct CU_Meet_projectApp: App {
-    
+
     @StateObject private var bookingStore = BookingStore()
-    @StateObject private var groupStore = GroupStore()
-    @StateObject private var authManager = AuthManager()
+    @StateObject private var groupStore   = GroupStore()
+    @StateObject private var userStore: UserStore
+    @StateObject private var authManager: AuthManager
 
     init() {
-            // Replace with your actual Client ID from Google Console
-            let config = GIDConfiguration(clientID: "71930476155-qrkic6shoev6tuutc1ot1fhi08nnim76.apps.googleusercontent.com")
-            GIDSignIn.sharedInstance.configuration = config
+        let config = GIDConfiguration(clientID: "71930476155-qrkic6shoev6tuutc1ot1fhi08nnim76.apps.googleusercontent.com")
+        GIDSignIn.sharedInstance.configuration = config
+
+        let store = UserStore()
+        _userStore   = StateObject(wrappedValue: store)
+        _authManager = StateObject(wrappedValue: AuthManager(userStore: store))
     }
 
     var body: some Scene {
@@ -26,10 +30,11 @@ struct CU_Meet_projectApp: App {
             MainTabView()
                 .environmentObject(bookingStore)
                 .environmentObject(groupStore)
+                .environmentObject(userStore)
                 .environmentObject(authManager)
                 .onOpenURL { url in
-                                    GIDSignIn.sharedInstance.handle(url)
-                                }
+                    GIDSignIn.sharedInstance.handle(url)
+                }
         }
     }
 }

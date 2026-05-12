@@ -7,10 +7,12 @@
 
 
 import SwiftUI
+import GoogleSignIn
 
 struct JoinGroupView: View {
     
     @EnvironmentObject var groupStore: GroupStore
+    @EnvironmentObject var authManager: AuthManager
     @State private var code = ""
     @State private var error: String?
     @State private var showAlert = false
@@ -29,7 +31,10 @@ struct JoinGroupView: View {
             
             Button(action: {
                 
-                let result = groupStore.joinGroup(code: code)
+                let result = groupStore.joinGroup(
+                    code: code,
+                    userID: authManager.userProfile?.userID ?? ""
+                )
                 
                 switch result {
                     

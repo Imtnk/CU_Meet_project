@@ -7,10 +7,12 @@
 
 
 import SwiftUI
+import GoogleSignIn
 
 struct CreateGroupView: View {
     
     @EnvironmentObject var groupStore: GroupStore
+    @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) var dismiss
     
     @State private var groupName = ""
@@ -27,7 +29,10 @@ struct CreateGroupView: View {
                 .padding()
             
             Button("Create") {
-                createdGroup = groupStore.createGroup(name: groupName)
+                createdGroup = groupStore.createGroup(
+                    name: groupName,
+                    creatorID: authManager.userProfile?.userID ?? ""
+                )
             }
             .disabled(groupName.isEmpty)
             

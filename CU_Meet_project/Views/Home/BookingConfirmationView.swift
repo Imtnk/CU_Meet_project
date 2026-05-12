@@ -13,7 +13,7 @@ struct BookingConfirmationView: View {
     let room: MeetingRoom
     let selectedDate: Date
     let selectedTime: String
-    let groupID: UUID
+    let groupID: String
     
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var groupStore: GroupStore
@@ -79,6 +79,7 @@ struct BookingConfirmationView: View {
                 Button("Confirm") {
                     
                     let booking = Booking(
+                        id: UUID().uuidString,
                         roomID: room.id,
                         roomName: room.name,
                         groupID: groupID,

@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import GoogleSignIn
 
 struct GroupsView: View {
     
     @EnvironmentObject var groupStore: GroupStore
-    
+    @EnvironmentObject var authManager: AuthManager
+
     @State private var showCreate = false
     @State private var showJoin = false
     
@@ -25,12 +27,12 @@ struct GroupsView: View {
                 Text("Your Groups")
                     .font(.title)
                 
-                if groupStore.myGroups.isEmpty {
+                if groupStore.myGroups(currentUserID: authManager.userProfile?.userID).isEmpty {
                     Text("No groups yet")
                         .foregroundColor(.gray)
                 } else {
                     HStack{
-                        List(groupStore.myGroups) { group in
+                        List(groupStore.myGroups(currentUserID: authManager.userProfile?.userID)) { group in
                             NavigationLink(destination: GroupDetailView(group: group)) {
                                 HStack {
                                     VStack(alignment: .leading) {

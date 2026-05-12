@@ -15,6 +15,7 @@ struct BookingDetailView: View {
     @EnvironmentObject var groupStore: GroupStore
     
     @EnvironmentObject var bookingStore: BookingStore
+    @EnvironmentObject var userStore: UserStore
     @Environment(\.dismiss) var dismiss
     @State private var showCancelAlert = false
     
@@ -62,8 +63,8 @@ struct BookingDetailView: View {
                                 .font(.headline)
                                 .padding(.top, 5)
 
-                            ForEach(group.members, id: \.self) { member in
-                                Text("• \(member)")
+                            ForEach(group.memberIDs, id: \.self) { memberID in
+                                Text("• \(userStore.displayName(for: memberID))")
                                     .font(.subheadline)
                                     .foregroundColor(.gray)
                             }
