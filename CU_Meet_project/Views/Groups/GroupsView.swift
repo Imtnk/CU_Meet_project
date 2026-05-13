@@ -10,7 +10,8 @@ import SwiftUI
 struct GroupsView: View {
     
     @EnvironmentObject var groupStore: GroupStore
-    
+    @EnvironmentObject var authManager: AuthManager
+
     @State private var showCreate = false
     @State private var showJoin = false
     
@@ -25,12 +26,12 @@ struct GroupsView: View {
                 Text("Your Groups")
                     .font(.title)
                 
-                if groupStore.myGroups.isEmpty {
+                if groupStore.myGroups(currentUserID: authManager.currentUserID).isEmpty {
                     Text("No groups yet")
                         .foregroundColor(.gray)
                 } else {
                     HStack{
-                        List(groupStore.myGroups) { group in
+                        List(groupStore.myGroups(currentUserID: authManager.currentUserID)) { group in
                             NavigationLink(destination: GroupDetailView(group: group)) {
                                 HStack {
                                     VStack(alignment: .leading) {
@@ -81,6 +82,12 @@ struct GroupsView: View {
                 .padding()
             }
             .navigationTitle("Groups")
+            .onAppear {
+                groupStore.startListening(for: authManager.currentUserID ?? "")
+            }
+            .onChange(of: authManager.currentUserID) { _, newID in
+                groupStore.startListening(for: newID ?? "")
+            }
             .sheet(isPresented: $showCreate) {
                 CreateGroupView()
                     .environmentObject(groupStore)

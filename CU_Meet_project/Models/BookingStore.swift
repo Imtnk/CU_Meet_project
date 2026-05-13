@@ -2,32 +2,47 @@
 //  BookingStore.swift
 //  CU_Meet_project
 //
-//  Created by Imtnk on 17/4/2569 BE.
-//
 
 import Foundation
 import Combine
+import FirebaseFirestore
 
-enum BookingStatus {
+enum BookingStatus: String, Codable {
     case active
     case cancelled
 }
 
-struct Booking: Identifiable, Equatable {
-    let id = UUID()
-    let roomID: UUID
+struct Booking: Identifiable, Codable, Equatable {
+    let id: String
+    let roomID: String
     let roomName: String
-    let groupID: UUID
+    let groupID: String
     let date: Date
     let timeSlot: String
-    
     var status: BookingStatus = .active
 }
 
 class BookingStore: ObservableObject {
+
     @Published var bookings: [Booking] = []
-    
-    func isBooked(roomID: UUID, date: Date, timeSlot: String) -> Bool {
+    private var listener: ListenerRegistration?
+
+    deinit { listener?.remove() }
+
+    func startListening() {
+        listener?.remove()
+        listener = FirestoreService.shared.listenToBookings { [weak self] bookings in
+            self?.bookings = bookings
+        }
+    }
+
+    func stopListening() {
+        listener?.remove()
+        listener = nil
+        bookings = []
+    }
+
+    func isBooked(roomID: String, date: Date, timeSlot: String) -> Bool {
         bookings.contains {
             $0.roomID == roomID &&
             Calendar.current.isDate($0.date, inSameDayAs: date) &&
@@ -35,15 +50,13 @@ class BookingStore: ObservableObject {
             $0.status == .active
         }
     }
-    
-    func addBooking(_ booking: Booking) {
-        bookings.append(booking)
+
+    func addBooking(_ booking: Booking) async throws {
+        try await FirestoreService.shared.addBooking(booking)
     }
-    
-    func cancelBooking(_ booking: Booking) {
-        if let index = bookings.firstIndex(where: { $0.id == booking.id }) {
-            bookings[index].status = .cancelled
-        }
+
+    func cancelBooking(_ booking: Booking) async throws {
+        try await FirestoreService.shared.updateBookingStatus(id: booking.id, status: .cancelled)
     }
 
     func upcomingBookings() -> [Booking] {

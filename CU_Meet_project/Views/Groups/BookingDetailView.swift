@@ -15,8 +15,10 @@ struct BookingDetailView: View {
     @EnvironmentObject var groupStore: GroupStore
     
     @EnvironmentObject var bookingStore: BookingStore
+    @EnvironmentObject var userStore: UserStore
     @Environment(\.dismiss) var dismiss
     @State private var showCancelAlert = false
+    @State private var errorMessage: String?
     
     
     var body: some View {
@@ -62,8 +64,8 @@ struct BookingDetailView: View {
                                 .font(.headline)
                                 .padding(.top, 5)
 
-                            ForEach(group.members, id: \.self) { member in
-                                Text("• \(member)")
+                            ForEach(group.memberIDs, id: \.self) { memberID in
+                                Text("• \(userStore.displayName(for: memberID))")
                                     .font(.subheadline)
                                     .foregroundColor(.gray)
                             }
@@ -92,8 +94,14 @@ struct BookingDetailView: View {
                 .alert("Cancel Booking?", isPresented: $showCancelAlert) {
                     
                     Button("Delete", role: .destructive) {
-                        bookingStore.cancelBooking(booking)
-                        dismiss()
+                        Task {
+                            do {
+                                try await bookingStore.cancelBooking(booking)
+                                dismiss()
+                            } catch {
+                                errorMessage = error.localizedDescription
+                            }
+                        }
                     }
                     
                     Button("Keep", role: .cancel) { }
@@ -105,6 +113,14 @@ struct BookingDetailView: View {
         }
         .navigationTitle("Booking Details")
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Something went wrong", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("OK") {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
     }
     
     private func formattedDate(_ date: Date) -> String {

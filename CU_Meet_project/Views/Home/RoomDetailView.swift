@@ -18,7 +18,8 @@ struct RoomDetailView: View {
     @State private var selectedTime: String? = nil
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var groupStore: GroupStore
-    @State private var selectedGroupID: UUID? = nil
+    @EnvironmentObject var authManager: AuthManager
+    @State private var selectedGroupID: String? = nil
     @State private var showConfirmationSheet = false
     @Environment(\.dismiss) var dismiss
     
@@ -170,7 +171,7 @@ struct RoomDetailView: View {
             groupPickerSection
             
             if let id = selectedGroupID {
-                Text("Members: \(groupStore.myGroups.first(where: { $0.id == id })?.memberCount ?? 0)")
+                Text("Members: \(groupStore.myGroups(currentUserID: authManager.currentUserID).first(where: { $0.id == id })?.memberCount ?? 0)")
                     .font(.caption)
                     .foregroundColor(.gray)
             }
@@ -242,7 +243,7 @@ struct RoomDetailView: View {
                 .font(.headline)
             
             Menu {
-                ForEach(groupStore.myGroups) { group in
+                ForEach(groupStore.myGroups(currentUserID: authManager.currentUserID)) { group in
                     Button {
                         selectedGroupID = group.id
                     } label: {
@@ -269,7 +270,7 @@ struct RoomDetailView: View {
                     .font(.caption)
                     .foregroundColor(.red)
             }
-            if groupStore.myGroups.isEmpty {
+            if groupStore.myGroups(currentUserID: authManager.currentUserID).isEmpty {
                 Text("Join or create a group to book")
                     .font(.caption)
                     .foregroundColor(.red)

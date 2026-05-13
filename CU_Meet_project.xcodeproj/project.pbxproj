@@ -9,28 +9,17 @@
 /* Begin PBXBuildFile section */
 		C43638732F9328C1009E3EC8 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C43638722F9328C1009E3EC8 /* GoogleSignIn */; };
 		C43638752F9328C1009E3EC8 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = C43638742F9328C1009E3EC8 /* GoogleSignInSwift */; };
+		C43638E32FB33F09009E3EC8 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C43638E22FB33F09009E3EC8 /* FirebaseAuth */; };
+		C43638E52FB33F09009E3EC8 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = C43638E42FB33F09009E3EC8 /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		C4EC97C62F8002E000AC8966 /* CU_Meet_project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CU_Meet_project.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C43638772F932958009E3EC8 /* Exceptions for "CU_Meet_project" folder in "CU_Meet_project" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"CU-Meet-project-Info.plist",
-			);
-			target = C4EC97C52F8002E000AC8966 /* CU_Meet_project */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C4EC97C82F8002E000AC8966 /* CU_Meet_project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				C43638772F932958009E3EC8 /* Exceptions for "CU_Meet_project" folder in "CU_Meet_project" target */,
-			);
 			path = CU_Meet_project;
 			sourceTree = "<group>";
 		};
@@ -42,6 +31,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				C43638732F9328C1009E3EC8 /* GoogleSignIn in Frameworks */,
+				C43638E52FB33F09009E3EC8 /* FirebaseFirestore in Frameworks */,
+				C43638E32FB33F09009E3EC8 /* FirebaseAuth in Frameworks */,
 				C43638752F9328C1009E3EC8 /* GoogleSignInSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -87,6 +78,8 @@
 			packageProductDependencies = (
 				C43638722F9328C1009E3EC8 /* GoogleSignIn */,
 				C43638742F9328C1009E3EC8 /* GoogleSignInSwift */,
+				C43638E22FB33F09009E3EC8 /* FirebaseAuth */,
+				C43638E42FB33F09009E3EC8 /* FirebaseFirestore */,
 			);
 			productName = CU_Meet_project;
 			productReference = C4EC97C62F8002E000AC8966 /* CU_Meet_project.app */;
@@ -118,6 +111,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				C43638712F9328C1009E3EC8 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				C43638E12FB33F09009E3EC8 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C4EC97C72F8002E000AC8966 /* Products */;
@@ -371,6 +365,14 @@
 				minimumVersion = 9.1.0;
 			};
 		};
+		C43638E12FB33F09009E3EC8 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.13.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -383,6 +385,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C43638712F9328C1009E3EC8 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
 			productName = GoogleSignInSwift;
+		};
+		C43638E22FB33F09009E3EC8 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C43638E12FB33F09009E3EC8 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		C43638E42FB33F09009E3EC8 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C43638E12FB33F09009E3EC8 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

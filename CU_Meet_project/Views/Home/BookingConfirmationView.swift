@@ -13,14 +13,15 @@ struct BookingConfirmationView: View {
     let room: MeetingRoom
     let selectedDate: Date
     let selectedTime: String
-    let groupID: UUID
+    let groupID: String
     
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var groupStore: GroupStore
     
     @Environment(\.dismiss) var dismiss
     let onComplete: () -> Void
-    
+    @State private var errorMessage: String?
+
     var body: some View {
         VStack(spacing: 20) {
             
@@ -77,18 +78,22 @@ struct BookingConfirmationView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 
                 Button("Confirm") {
-                    
                     let booking = Booking(
+                        id: UUID().uuidString,
                         roomID: room.id,
                         roomName: room.name,
                         groupID: groupID,
                         date: selectedDate,
                         timeSlot: selectedTime
                     )
-                    
-                    bookingStore.addBooking(booking)
-                    
-                    onComplete() 
+                    Task {
+                        do {
+                            try await bookingStore.addBooking(booking)
+                            onComplete()
+                        } catch {
+                            errorMessage = error.localizedDescription
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
@@ -98,8 +103,16 @@ struct BookingConfirmationView: View {
             }
         }
         .padding()
+        .alert("Something went wrong", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("OK") {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
     }
-    
+
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

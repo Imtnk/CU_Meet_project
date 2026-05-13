@@ -2,87 +2,90 @@
 //  Group.swift
 //  CU_Meet_project
 //
-//  Created by Imtnk on 17/4/2569 BE.
-//
 
 import Foundation
 import Combine
-import SwiftUI
+import FirebaseFirestore
 
-struct Group: Identifiable, Equatable {
-    let id = UUID()
+struct Group: Identifiable, Codable, Equatable {
+    let id: String
     let name: String
     let joinCode: String
-    var members: [String]
-    
-    var memberCount: Int {
-        members.count
-    }
+    var memberIDs: [String]
+
+    var memberCount: Int { memberIDs.count }
 }
 
 class GroupStore: ObservableObject {
-    
+
     @Published var groups: [Group] = []
-    
-    init() {
-        let mockGroup = Group(
-            name: "Test Group",
-            joinCode: "123456",
-            members: ["Alice", "Bob"]
-        )
-        
-        groups.append(mockGroup)
+    private var listener: ListenerRegistration?
+
+    deinit { listener?.remove() }
+
+    func startListening(for userID: String) {
+        listener?.remove()
+        guard !userID.isEmpty else {
+            groups = []
+            return
+        }
+        listener = FirestoreService.shared.listenToGroups(for: userID) { [weak self] groups in
+            self?.groups = groups
+        }
     }
-    
-    func createGroup(name: String) -> Group {
-        let code = String(Int.random(in: 100000...999999))
-        
-        let group = Group(
-            name: name,
-            joinCode: code,
-            members: ["You"]
-        )
-        
-        groups.append(group)
-        return group
+
+    func stopListening() {
+        listener?.remove()
+        listener = nil
+        groups = []
     }
-    
+
     enum JoinResult {
         case success(Group)
         case alreadyMember(Group)
         case notFound
     }
-    
-    func joinGroup(code: String, userName: String = "You") -> JoinResult {
-        
-        guard let index = groups.firstIndex(where: { $0.joinCode == code }) else {
+
+    func createGroup(name: String, creatorID: String) async throws -> Group {
+        let code = String(Int.random(in: 100000...999999))
+        let group = Group(
+            id: UUID().uuidString,
+            name: name,
+            joinCode: code,
+            memberIDs: [creatorID]
+        )
+        try await FirestoreService.shared.createGroup(group)
+        return group
+    }
+
+    func joinGroup(code: String, userID: String) async throws -> JoinResult {
+        guard let group = try await FirestoreService.shared.fetchGroup(byJoinCode: code) else {
             return .notFound
         }
-        
-        if groups[index].members.contains(userName) {
-            return .alreadyMember(groups[index])
+        if group.memberIDs.contains(userID) {
+            return .alreadyMember(group)
         }
-        
-        groups[index].members.append(userName)
-        return .success(groups[index])
+        let updatedIDs = group.memberIDs + [userID]
+        try await FirestoreService.shared.updateGroupMembers(groupID: group.id, memberIDs: updatedIDs)
+        return .success(Group(id: group.id, name: group.name, joinCode: group.joinCode, memberIDs: updatedIDs))
     }
-    
-    func leaveGroup(groupID: UUID, userName: String = "You") {
-        guard let index = groups.firstIndex(where: { $0.id == groupID }) else { return }
-        
-        groups[index].members.removeAll { $0 == userName }
-        
-        // remove group if empty
-        if groups[index].members.isEmpty {
-            groups.remove(at: index)
+
+    func leaveGroup(groupID: String, userID: String) async throws {
+        guard let group = groups.first(where: { $0.id == groupID }) else { return }
+        let remaining = group.memberIDs.filter { $0 != userID }
+        if remaining.isEmpty {
+            try await FirestoreService.shared.deleteGroup(id: groupID)
+        } else {
+            try await FirestoreService.shared.updateGroupMembers(groupID: groupID, memberIDs: remaining)
         }
     }
-    
-    func groupName(for id: UUID) -> String {
+
+    func groupName(for id: String) -> String {
         groups.first(where: { $0.id == id })?.name ?? "Unknown Group"
     }
-    
-    var myGroups: [Group] {
-        groups.filter { $0.members.contains("You") }
+
+    func myGroups(currentUserID: String?) -> [Group] {
+        guard let currentUserID, !currentUserID.isEmpty else { return [] }
+        return groups.filter { $0.memberIDs.contains(currentUserID) }
     }
 }
