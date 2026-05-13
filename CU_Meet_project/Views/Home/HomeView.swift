@@ -51,7 +51,11 @@ struct HomeView: View {
             Text("Upcoming Bookings")
                 .font(.headline)
             
-            if bookings.isEmpty {
+            if bookingStore.isLoading {
+                ProgressView("Loading bookings…")
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 5)
+            } else if bookings.isEmpty {
                 Text("No upcoming bookings")
                     .foregroundColor(.gray)
                     .padding(.top, 5)

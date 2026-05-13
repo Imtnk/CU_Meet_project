@@ -14,6 +14,12 @@ struct JoinGroupView: View {
     @State private var isJoining = false
     @State private var showAlert = false
     @State private var alertMessage = ""
+    @State private var alertTitle = ""
+
+    var isValidCode: Bool {
+        let trimmed = code.trimmingCharacters(in: .whitespaces)
+        return trimmed.count == 6 && trimmed.allSatisfy { $0.isNumber }
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -21,10 +27,28 @@ struct JoinGroupView: View {
             Text("Join Group")
                 .font(.title)
 
-            TextField("Enter 6-digit code", text: $code)
-                .keyboardType(.numberPad)
-                .textFieldStyle(.roundedBorder)
-                .padding()
+            VStack(alignment: .leading, spacing: 8) {
+                TextField("Enter 6-digit code", text: $code)
+                    .keyboardType(.numberPad)
+                    .textFieldStyle(.roundedBorder)
+                    .onChange(of: code) { newValue in
+                        code = String(newValue.prefix(6).filter { $0.isNumber })
+                    }
+
+                HStack {
+                    Text("\(code.count)/6")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+
+                    if !isValidCode && !code.isEmpty {
+                        Text("Code must be 6 digits")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                    Spacer()
+                }
+            }
+            .padding()
 
             Button(action: {
                 isJoining = true
@@ -36,15 +60,19 @@ struct JoinGroupView: View {
                         )
                         switch result {
                         case .success(let group):
-                            alertMessage = "Joined \(group.name)"
+                            alertTitle = "Success"
+                            alertMessage = "Joined \(group.name)!"
                             code = ""
                         case .alreadyMember(let group):
-                            alertMessage = "You're already in \(group.name)"
+                            alertTitle = "Already Member"
+                            alertMessage = "You're already a member of \(group.name)"
                         case .notFound:
-                            alertMessage = "Group not found"
+                            alertTitle = "Not Found"
+                            alertMessage = "No group found with this code"
                         }
                     } catch {
-                        alertMessage = "Something went wrong"
+                        alertTitle = "Error"
+                        alertMessage = error.localizedDescription
                     }
                     isJoining = false
                     showAlert = true
@@ -57,12 +85,12 @@ struct JoinGroupView: View {
                     .foregroundColor(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-            .disabled(code.isEmpty || isJoining)
+            .disabled(!isValidCode || isJoining)
 
             Spacer()
         }
         .padding()
-        .alert("Join Group", isPresented: $showAlert) {
+        .alert(alertTitle, isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
         } message: {
             Text(alertMessage)

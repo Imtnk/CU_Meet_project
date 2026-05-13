@@ -114,6 +114,14 @@ struct ProfileView: View {
                 }
             }
             .navigationTitle("Profile")
+            .alert("Sign In Failed", isPresented: Binding(
+                get: { authManager.signInError != nil },
+                set: { if !$0 { authManager.signInError = nil } }
+            )) {
+                Button("OK") {}
+            } message: {
+                Text(authManager.signInError ?? "")
+            }
         }
     }
 }

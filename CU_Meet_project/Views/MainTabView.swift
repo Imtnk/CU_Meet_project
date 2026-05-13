@@ -37,21 +37,33 @@ struct MainTabView: View {
             }
 
         TabView(selection: $selectedTab) {
-            
+
             // HOME
-            HomeView()
-                .tabItem {
-                    Label("Home", systemImage: "house")
+            SwiftUI.Group {
+                if authManager.isLoggedIn {
+                    HomeView()
+                } else {
+                    SignInRequiredView()
                 }
-                .tag(Tab.home)
-            
+            }
+            .tabItem {
+                Label("Home", systemImage: "house")
+            }
+            .tag(Tab.home)
+
             // GROUP
-            GroupsView()
-                .tabItem {
-                    Label("Groups", systemImage: "person.3")
+            SwiftUI.Group {
+                if authManager.isLoggedIn {
+                    GroupsView()
+                } else {
+                    SignInRequiredView()
                 }
-                .tag(Tab.groups)
-            
+            }
+            .tabItem {
+                Label("Groups", systemImage: "person.3")
+            }
+            .tag(Tab.groups)
+
             // PROFILE
             ProfileView()
                 .tabItem {
@@ -80,6 +92,28 @@ struct MainTabView: View {
                 bookingStore.startListening()
                 groupStore.startListening(for: authManager.currentUserID ?? "")
             }
+        }
+    }
+}
+
+private struct SignInRequiredView: View {
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                Spacer()
+                Image(systemName: "person.crop.circle.badge.exclamationmark")
+                    .font(.system(size: 64))
+                    .foregroundColor(.gray)
+                Text("Sign In Required")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                Text("Go to the Profile tab to sign in.")
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                Spacer()
+            }
+            .navigationTitle("Sign In")
         }
     }
 }

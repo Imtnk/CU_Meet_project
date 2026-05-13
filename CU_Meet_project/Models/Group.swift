@@ -19,6 +19,7 @@ struct Group: Identifiable, Codable, Equatable {
 class GroupStore: ObservableObject {
 
     @Published var groups: [Group] = []
+    @Published var isLoading = false
     private var listener: ListenerRegistration?
 
     deinit { listener?.remove() }
@@ -27,10 +28,13 @@ class GroupStore: ObservableObject {
         listener?.remove()
         guard !userID.isEmpty else {
             groups = []
+            isLoading = false
             return
         }
+        isLoading = true
         listener = FirestoreService.shared.listenToGroups(for: userID) { [weak self] groups in
             self?.groups = groups
+            self?.isLoading = false
         }
     }
 
@@ -38,6 +42,7 @@ class GroupStore: ObservableObject {
         listener?.remove()
         listener = nil
         groups = []
+        isLoading = false
     }
 
     enum JoinResult {
@@ -47,10 +52,20 @@ class GroupStore: ObservableObject {
     }
 
     func createGroup(name: String, creatorID: String) async throws -> Group {
-        let code = String(Int.random(in: 100000...999999))
+        let trimmedName = name.trimmingCharacters(in: .whitespaces)
+
+        guard !trimmedName.isEmpty else {
+            throw AppError.invalidGroupName(reason: "cannot be empty")
+        }
+
+        guard trimmedName.count <= 100 else {
+            throw AppError.invalidGroupName(reason: "must be 100 characters or less")
+        }
+
+        let code = try await FirestoreService.shared.generateUniqueJoinCode()
         let group = Group(
             id: UUID().uuidString,
-            name: name,
+            name: trimmedName,
             joinCode: code,
             memberIDs: [creatorID]
         )

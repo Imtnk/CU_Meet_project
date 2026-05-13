@@ -25,14 +25,17 @@ struct Booking: Identifiable, Codable, Equatable {
 class BookingStore: ObservableObject {
 
     @Published var bookings: [Booking] = []
+    @Published var isLoading = false
     private var listener: ListenerRegistration?
 
     deinit { listener?.remove() }
 
     func startListening() {
         listener?.remove()
+        isLoading = true
         listener = FirestoreService.shared.listenToBookings { [weak self] bookings in
             self?.bookings = bookings
+            self?.isLoading = false
         }
     }
 
@@ -40,6 +43,7 @@ class BookingStore: ObservableObject {
         listener?.remove()
         listener = nil
         bookings = []
+        isLoading = false
     }
 
     func isBooked(roomID: String, date: Date, timeSlot: String) -> Bool {

@@ -14,6 +14,7 @@ struct GroupDetailView: View {
     @Environment(\.dismiss) var dismiss
 
     @State private var showLeaveAlert = false
+    @State private var isLeaving = false
     @State private var errorMessage: String?
 
     private var currentGroup: Group? {
@@ -51,13 +52,20 @@ struct GroupDetailView: View {
                 } label: {
                     HStack {
                         Spacer()
-                        Text("Leave Group")
+                        if isLeaving {
+                            ProgressView()
+                                .tint(.red)
+                        } else {
+                            Text("Leave Group")
+                        }
                         Spacer()
                     }
                 }
+                .disabled(isLeaving)
             }
             .alert("Leave Group?", isPresented: $showLeaveAlert) {
                 Button("Leave", role: .destructive) {
+                    isLeaving = true
                     Task {
                         do {
                             try await groupStore.leaveGroup(
@@ -67,6 +75,7 @@ struct GroupDetailView: View {
                             dismiss()
                         } catch {
                             errorMessage = error.localizedDescription
+                            isLeaving = false
                         }
                     }
                 }

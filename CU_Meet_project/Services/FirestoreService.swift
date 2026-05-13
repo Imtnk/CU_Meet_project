@@ -67,6 +67,25 @@ final class FirestoreService {
         return try doc.data(as: Group.self)
     }
 
+    func generateUniqueJoinCode() async throws -> String {
+        var code = ""
+        var isUnique = false
+        var attempts = 0
+        let maxAttempts = 10
+
+        while !isUnique && attempts < maxAttempts {
+            code = String(Int.random(in: 100000...999999))
+            let existing = try await fetchGroup(byJoinCode: code)
+            isUnique = existing == nil
+            attempts += 1
+        }
+
+        guard isUnique else {
+            throw AppError.uniqueCodeGenerationFailed
+        }
+        return code
+    }
+
     func createGroup(_ group: Group) async throws {
         let ref = db.collection(C.groups).document(group.id)
         let data = try Firestore.Encoder().encode(group)

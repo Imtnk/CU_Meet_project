@@ -17,15 +17,35 @@ struct CreateGroupView: View {
     @State private var isCreating = false
     @State private var errorMessage: String?
 
+    var isValidName: Bool {
+        let trimmed = groupName.trimmingCharacters(in: .whitespaces)
+        return !trimmed.isEmpty && trimmed.count <= 100
+    }
+
     var body: some View {
         VStack(spacing: 20) {
 
             Text("Create Group")
                 .font(.title)
 
-            TextField("Group Name", text: $groupName)
-                .textFieldStyle(.roundedBorder)
-                .padding()
+            VStack(alignment: .leading, spacing: 8) {
+                TextField("Group Name", text: $groupName)
+                    .textFieldStyle(.roundedBorder)
+
+                HStack {
+                    Text("\(groupName.count)/100")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+
+                    if !isValidName && !groupName.isEmpty {
+                        Text("Invalid name")
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                    Spacer()
+                }
+            }
+            .padding()
 
             Button("Create") {
                 isCreating = true
@@ -41,7 +61,7 @@ struct CreateGroupView: View {
                     isCreating = false
                 }
             }
-            .disabled(groupName.isEmpty || isCreating)
+            .disabled(!isValidName || isCreating)
 
             if let group = createdGroup {
                 VStack(spacing: 10) {

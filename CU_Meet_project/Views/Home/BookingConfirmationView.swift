@@ -21,13 +21,19 @@ struct BookingConfirmationView: View {
     @Environment(\.dismiss) var dismiss
     let onComplete: () -> Void
     @State private var errorMessage: String?
+    @State private var isSubmitting = false
 
     var body: some View {
         VStack(spacing: 20) {
-            
+
             Text("Confirm Booking")
                 .font(.title2)
                 .fontWeight(.bold)
+
+            if isSubmitting {
+                ProgressView()
+                    .scaleEffect(1.5)
+            }
             
             Image("meeting_room1")
                 .resizable()
@@ -67,8 +73,8 @@ struct BookingConfirmationView: View {
             
             Spacer()
             
-            HStack {
-                
+            HStack(spacing: 12) {
+
                 Button("Cancel") {
                     dismiss()
                 }
@@ -76,8 +82,10 @@ struct BookingConfirmationView: View {
                 .padding()
                 .background(Color.gray.opacity(0.2))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
-                
-                Button("Confirm") {
+                .disabled(isSubmitting)
+
+                Button(action: {
+                    isSubmitting = true
                     let booking = Booking(
                         id: UUID().uuidString,
                         roomID: room.id,
@@ -92,14 +100,26 @@ struct BookingConfirmationView: View {
                             onComplete()
                         } catch {
                             errorMessage = error.localizedDescription
+                            isSubmitting = false
                         }
+                    }
+                }) {
+                    if isSubmitting {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .tint(.white)
+                            Text("Booking…")
+                        }
+                    } else {
+                        Text("Confirm")
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue)
+                .background(isSubmitting ? Color.blue.opacity(0.6) : Color.blue)
                 .foregroundColor(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
+                .disabled(isSubmitting)
             }
         }
         .padding()

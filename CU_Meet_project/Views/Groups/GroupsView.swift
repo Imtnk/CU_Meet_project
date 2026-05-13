@@ -26,7 +26,10 @@ struct GroupsView: View {
                 Text("Your Groups")
                     .font(.title)
                 
-                if groupStore.myGroups(currentUserID: authManager.currentUserID).isEmpty {
+                if groupStore.isLoading {
+                    ProgressView("Loading groups…")
+                        .frame(maxWidth: .infinity, alignment: .center)
+                } else if groupStore.myGroups(currentUserID: authManager.currentUserID).isEmpty {
                     Text("No groups yet")
                         .foregroundColor(.gray)
                 } else {

@@ -18,6 +18,7 @@ class AuthManager: ObservableObject {
     @Published var currentUserID: String?
     /// True only when Firebase Auth established a real session (not the Google-UID fallback).
     @Published var isFirebaseAuthenticated: Bool = false
+    @Published var signInError: String?
 
     private let userStore: UserStore
 
@@ -32,6 +33,7 @@ class AuthManager: ObservableObject {
         GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { [weak self] result, error in
             if let error = error {
                 print("Sign in failed: \(error.localizedDescription)")
+                DispatchQueue.main.async { self?.signInError = error.localizedDescription }
                 return
             }
             guard let self, let user = result?.user else { return }
