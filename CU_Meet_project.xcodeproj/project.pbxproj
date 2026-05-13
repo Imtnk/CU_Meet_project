@@ -17,22 +17,9 @@
 		C4EC97C62F8002E000AC8966 /* CU_Meet_project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CU_Meet_project.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C43638772F932958009E3EC8 /* Exceptions for "CU_Meet_project" folder in "CU_Meet_project" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"CU-Meet-project-Info.plist",
-			);
-			target = C4EC97C52F8002E000AC8966 /* CU_Meet_project */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C4EC97C82F8002E000AC8966 /* CU_Meet_project */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				C43638772F932958009E3EC8 /* Exceptions for "CU_Meet_project" folder in "CU_Meet_project" target */,
-			);
 			path = CU_Meet_project;
 			sourceTree = "<group>";
 		};

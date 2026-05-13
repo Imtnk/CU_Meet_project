@@ -8,7 +8,7 @@
 import Foundation
 
 struct AppUser: Identifiable, Codable, Equatable {
-    let id: String          // Google userID
+    let id: String          // Firebase Auth UID
     var displayName: String
     var email: String?
     var photoURL: String?   // Google CDN URL

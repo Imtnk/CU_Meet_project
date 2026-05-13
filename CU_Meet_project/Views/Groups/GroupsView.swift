@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import GoogleSignIn
 
 struct GroupsView: View {
     
@@ -27,12 +26,12 @@ struct GroupsView: View {
                 Text("Your Groups")
                     .font(.title)
                 
-                if groupStore.myGroups(currentUserID: authManager.userProfile?.userID).isEmpty {
+                if groupStore.myGroups(currentUserID: authManager.currentUserID).isEmpty {
                     Text("No groups yet")
                         .foregroundColor(.gray)
                 } else {
                     HStack{
-                        List(groupStore.myGroups(currentUserID: authManager.userProfile?.userID)) { group in
+                        List(groupStore.myGroups(currentUserID: authManager.currentUserID)) { group in
                             NavigationLink(destination: GroupDetailView(group: group)) {
                                 HStack {
                                     VStack(alignment: .leading) {
@@ -84,9 +83,9 @@ struct GroupsView: View {
             }
             .navigationTitle("Groups")
             .onAppear {
-                groupStore.startListening(for: authManager.userProfile?.userID ?? "")
+                groupStore.startListening(for: authManager.currentUserID ?? "")
             }
-            .onChange(of: authManager.userProfile?.userID) { _, newID in
+            .onChange(of: authManager.currentUserID) { _, newID in
                 groupStore.startListening(for: newID ?? "")
             }
             .sheet(isPresented: $showCreate) {

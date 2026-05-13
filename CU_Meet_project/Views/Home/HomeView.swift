@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct HomeView: View {
-    
+
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var groupStore: GroupStore
+    @EnvironmentObject var authManager: AuthManager
     
     var body: some View {
         NavigationStack {
@@ -40,15 +41,9 @@ struct HomeView: View {
     }
     
     private var upcomingSection: some View {
-        
-        let bookings = bookingStore.upcomingBookings().prefix(5)
-            .filter { $0.date >= Calendar.current.startOfDay(for: Date()) }
-            .sorted {
-                if Calendar.current.isDate($0.date, inSameDayAs: $1.date) {
-                    return $0.timeSlot < $1.timeSlot
-                }
-                return $0.date < $1.date
-            }
+        let myGroupIDs = Set(groupStore.myGroups(currentUserID: authManager.currentUserID).map { $0.id })
+        let bookings = bookingStore.upcomingBookings()
+            .filter { myGroupIDs.contains($0.groupID) }
             .prefix(5)
         
         return VStack(alignment: .leading, spacing: 12) {
@@ -117,8 +112,9 @@ struct HomeView: View {
 }
 
 #Preview {
-    
+    let userStore = UserStore()
     HomeView()
         .environmentObject(BookingStore())
         .environmentObject(GroupStore())
+        .environmentObject(AuthManager(userStore: userStore))
 }

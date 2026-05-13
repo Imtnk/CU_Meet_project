@@ -10,9 +10,11 @@ import GoogleSignInSwift
 import GoogleSignIn
 
 struct ProfileView: View {
-    // Access the global auth state
     @EnvironmentObject private var authManager: AuthManager
-    
+    #if DEBUG
+    @State private var seedAlert: String?
+    #endif
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
@@ -52,6 +54,35 @@ struct ProfileView: View {
                                 .background(Color.red.opacity(0.1))
                                 .cornerRadius(10)
                         }
+
+                        #if DEBUG
+//                        Button {
+//                            Task {
+//                                do {
+//                                    try await FirestoreService.shared.seedMockData(
+//                                        currentUserID: authManager.currentUserID ?? ""
+//                                    )
+//                                    seedAlert = "Mock data seeded successfully."
+//                                } catch {
+//                                    seedAlert = "Seed failed: \(error.localizedDescription)"
+//                                }
+//                            }
+//                        } label: {
+//                            Text("Seed Mock Data")
+//                                .frame(maxWidth: .infinity)
+//                                .padding()
+//                                .background(Color.orange.opacity(0.15))
+//                                .cornerRadius(10)
+//                        }
+//                        .alert("Seed Mock Data", isPresented: Binding(
+//                            get: { seedAlert != nil },
+//                            set: { if !$0 { seedAlert = nil } }
+//                        )) {
+//                            Button("OK") {}
+//                        } message: {
+//                            Text(seedAlert ?? "")
+//                        }
+                        #endif
                     }
                     .padding()
                     

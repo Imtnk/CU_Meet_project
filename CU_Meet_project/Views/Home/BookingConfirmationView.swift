@@ -20,7 +20,8 @@ struct BookingConfirmationView: View {
     
     @Environment(\.dismiss) var dismiss
     let onComplete: () -> Void
-    
+    @State private var errorMessage: String?
+
     var body: some View {
         VStack(spacing: 20) {
             
@@ -86,8 +87,12 @@ struct BookingConfirmationView: View {
                         timeSlot: selectedTime
                     )
                     Task {
-                        try? await bookingStore.addBooking(booking)
-                        onComplete()
+                        do {
+                            try await bookingStore.addBooking(booking)
+                            onComplete()
+                        } catch {
+                            errorMessage = error.localizedDescription
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -98,8 +103,16 @@ struct BookingConfirmationView: View {
             }
         }
         .padding()
+        .alert("Something went wrong", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("OK") {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
     }
-    
+
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

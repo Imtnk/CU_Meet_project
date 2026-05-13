@@ -18,6 +18,7 @@ struct BookingDetailView: View {
     @EnvironmentObject var userStore: UserStore
     @Environment(\.dismiss) var dismiss
     @State private var showCancelAlert = false
+    @State private var errorMessage: String?
     
     
     var body: some View {
@@ -94,8 +95,12 @@ struct BookingDetailView: View {
                     
                     Button("Delete", role: .destructive) {
                         Task {
-                            try? await bookingStore.cancelBooking(booking)
-                            dismiss()
+                            do {
+                                try await bookingStore.cancelBooking(booking)
+                                dismiss()
+                            } catch {
+                                errorMessage = error.localizedDescription
+                            }
                         }
                     }
                     
@@ -108,6 +113,14 @@ struct BookingDetailView: View {
         }
         .navigationTitle("Booking Details")
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Something went wrong", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("OK") {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
     }
     
     private func formattedDate(_ date: Date) -> String {

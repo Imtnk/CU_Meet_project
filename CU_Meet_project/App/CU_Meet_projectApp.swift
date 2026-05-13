@@ -20,8 +20,8 @@ struct CU_Meet_projectApp: App {
     init() {
         FirebaseApp.configure()
 
-        let config = GIDConfiguration(clientID: "71930476155-qrkic6shoev6tuutc1ot1fhi08nnim76.apps.googleusercontent.com")
-        GIDSignIn.sharedInstance.configuration = config
+        let clientID = FirebaseApp.app()?.options.clientID ?? ""
+        GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
 
         let store = UserStore()
         _userStore   = StateObject(wrappedValue: store)

@@ -27,13 +27,20 @@ class BookingStore: ObservableObject {
     @Published var bookings: [Booking] = []
     private var listener: ListenerRegistration?
 
-    init() {
+    deinit { listener?.remove() }
+
+    func startListening() {
+        listener?.remove()
         listener = FirestoreService.shared.listenToBookings { [weak self] bookings in
             self?.bookings = bookings
         }
     }
 
-    deinit { listener?.remove() }
+    func stopListening() {
+        listener?.remove()
+        listener = nil
+        bookings = []
+    }
 
     func isBooked(roomID: String, date: Date, timeSlot: String) -> Bool {
         bookings.contains {

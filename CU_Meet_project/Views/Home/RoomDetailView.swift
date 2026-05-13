@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import GoogleSignIn
 
 struct RoomDetailView: View {
     
@@ -172,7 +171,7 @@ struct RoomDetailView: View {
             groupPickerSection
             
             if let id = selectedGroupID {
-                Text("Members: \(groupStore.myGroups(currentUserID: authManager.userProfile?.userID).first(where: { $0.id == id })?.memberCount ?? 0)")
+                Text("Members: \(groupStore.myGroups(currentUserID: authManager.currentUserID).first(where: { $0.id == id })?.memberCount ?? 0)")
                     .font(.caption)
                     .foregroundColor(.gray)
             }
@@ -244,7 +243,7 @@ struct RoomDetailView: View {
                 .font(.headline)
             
             Menu {
-                ForEach(groupStore.myGroups(currentUserID: authManager.userProfile?.userID)) { group in
+                ForEach(groupStore.myGroups(currentUserID: authManager.currentUserID)) { group in
                     Button {
                         selectedGroupID = group.id
                     } label: {
@@ -271,7 +270,7 @@ struct RoomDetailView: View {
                     .font(.caption)
                     .foregroundColor(.red)
             }
-            if groupStore.myGroups(currentUserID: authManager.userProfile?.userID).isEmpty {
+            if groupStore.myGroups(currentUserID: authManager.currentUserID).isEmpty {
                 Text("Join or create a group to book")
                     .font(.caption)
                     .foregroundColor(.red)

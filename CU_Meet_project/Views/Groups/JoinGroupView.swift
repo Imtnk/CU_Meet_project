@@ -32,7 +32,7 @@ struct JoinGroupView: View {
                     do {
                         let result = try await groupStore.joinGroup(
                             code: code,
-                            userID: authManager.userProfile?.userID ?? ""
+                            userID: authManager.currentUserID ?? ""
                         )
                         switch result {
                         case .success(let group):

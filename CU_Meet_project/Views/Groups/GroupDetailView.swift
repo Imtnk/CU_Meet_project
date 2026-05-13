@@ -14,6 +14,7 @@ struct GroupDetailView: View {
     @Environment(\.dismiss) var dismiss
 
     @State private var showLeaveAlert = false
+    @State private var errorMessage: String?
 
     private var currentGroup: Group? {
         groupStore.groups.first(where: { $0.id == group.id })
@@ -58,11 +59,15 @@ struct GroupDetailView: View {
             .alert("Leave Group?", isPresented: $showLeaveAlert) {
                 Button("Leave", role: .destructive) {
                     Task {
-                        try? await groupStore.leaveGroup(
-                            groupID: group.id,
-                            userID: authManager.userProfile?.userID ?? ""
-                        )
-                        dismiss()
+                        do {
+                            try await groupStore.leaveGroup(
+                                groupID: group.id,
+                                userID: authManager.currentUserID ?? ""
+                            )
+                            dismiss()
+                        } catch {
+                            errorMessage = error.localizedDescription
+                        }
                     }
                 }
                 Button("Cancel", role: .cancel) { }
@@ -72,5 +77,13 @@ struct GroupDetailView: View {
         }
         .navigationTitle(currentGroup?.name ?? "Detail")
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Something went wrong", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("OK") {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
     }
 }
