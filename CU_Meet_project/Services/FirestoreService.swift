@@ -167,13 +167,13 @@ final class FirestoreService {
         let mockBookings: [Booking] = [
             Booking(id: "mock_booking_1", roomID: "room_engineering", roomName: "Engineering Room",
                     groupID: "mock_group_alpha", date: cal.date(byAdding: .day, value: 1, to: today)!,
-                    timeSlot: "09:00 - 10:00"),
+                    timeSlot: "09:00 - 10:00", imageAssetName: nil),
             Booking(id: "mock_booking_2", roomID: "room_library",     roomName: "Library Room",
                     groupID: "mock_group_beta",  date: cal.date(byAdding: .day, value: 2, to: today)!,
-                    timeSlot: "14:00 - 15:00"),
+                    timeSlot: "14:00 - 15:00", imageAssetName: nil),
             Booking(id: "mock_booking_3", roomID: "room_business",    roomName: "Business Room",
                     groupID: "mock_group_alpha", date: cal.date(byAdding: .day, value: 3, to: today)!,
-                    timeSlot: "11:00 - 12:00"),
+                    timeSlot: "11:00 - 12:00", imageAssetName: nil),
         ]
         let bookingBatch = db.batch()
         for booking in mockBookings {

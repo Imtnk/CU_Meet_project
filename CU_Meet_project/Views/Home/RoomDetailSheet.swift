@@ -30,8 +30,8 @@ struct RoomDetailSheet: View {
                 .font(.headline)
                 .padding(.top, 8)
             
-            // Image (placeholder for now)
-            Image("meeting_room1")
+            // Image
+            Image(room.imageAssetName)
                 .resizable()
                 .scaledToFill()
                 .frame(height: 180)

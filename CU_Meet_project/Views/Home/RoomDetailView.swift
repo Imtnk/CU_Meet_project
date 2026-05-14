@@ -38,7 +38,7 @@ struct RoomDetailView: View {
             VStack(spacing: 20) {
                 
                 // Image
-                Image("meeting_room1")
+                Image(room.imageAssetName)
                     .resizable()
                     .scaledToFill()
                     .frame(height: 220)

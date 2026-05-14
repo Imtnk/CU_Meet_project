@@ -26,7 +26,7 @@ struct BookingDetailView: View {
             VStack(spacing: 20) {
                 
                 // Room Image
-                Image("meeting_room1")
+                Image(booking.imageAssetName ?? "meeting_room1")
                     .resizable()
                     .scaledToFill()
                     .frame(height: 220)

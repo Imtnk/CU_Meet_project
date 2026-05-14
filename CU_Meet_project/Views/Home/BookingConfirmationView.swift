@@ -35,7 +35,7 @@ struct BookingConfirmationView: View {
                     .scaleEffect(1.5)
             }
             
-            Image("meeting_room1")
+            Image(room.imageAssetName)
                 .resizable()
                 .scaledToFill()
                 .frame(height: 180)
@@ -92,7 +92,8 @@ struct BookingConfirmationView: View {
                         roomName: room.name,
                         groupID: groupID,
                         date: selectedDate,
-                        timeSlot: selectedTime
+                        timeSlot: selectedTime,
+                        imageAssetName: room.imageAssetName
                     )
                     Task {
                         do {
