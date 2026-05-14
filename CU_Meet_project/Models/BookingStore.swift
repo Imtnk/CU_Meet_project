@@ -64,16 +64,32 @@ class BookingStore: ObservableObject {
     }
 
     func upcomingBookings() -> [Booking] {
-        bookings
-            .filter {
-                $0.status == .active &&
-                $0.date >= Calendar.current.startOfDay(for: Date())
-            }
+        let now = Date()
+        return bookings
+            .filter { $0.status == .active && endDateTime(for: $0) > now }
             .sorted {
                 if Calendar.current.isDate($0.date, inSameDayAs: $1.date) {
                     return $0.timeSlot < $1.timeSlot
                 }
                 return $0.date < $1.date
             }
+    }
+
+    func isUpcoming(_ booking: Booking) -> Bool {
+        endDateTime(for: booking) > Date()
+    }
+
+    // Parses the end time from a "HH:mm - HH:mm" timeSlot and combines it with the booking date.
+    private func endDateTime(for booking: Booking) -> Date {
+        let parts = booking.timeSlot.components(separatedBy: " - ")
+        guard let endPart = parts.last,
+              parts.count == 2 else { return booking.date }
+        let timeParts = endPart.trimmingCharacters(in: .whitespaces).components(separatedBy: ":")
+        guard timeParts.count == 2,
+              let hour = Int(timeParts[0]),
+              let minute = Int(timeParts[1]) else { return booking.date }
+        return Calendar.current.date(
+            bySettingHour: hour, minute: minute, second: 0, of: booking.date
+        ) ?? booking.date
     }
 }

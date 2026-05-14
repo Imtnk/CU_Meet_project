@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseCore
 import GoogleSignIn
+import UserNotifications
 
 @main
 struct CU_Meet_projectApp: App {
@@ -26,6 +27,8 @@ struct CU_Meet_projectApp: App {
         let store = UserStore()
         _userStore   = StateObject(wrappedValue: store)
         _authManager = StateObject(wrappedValue: AuthManager(userStore: store))
+
+        NotificationManager.shared.requestPermission()
     }
 
     var body: some Scene {

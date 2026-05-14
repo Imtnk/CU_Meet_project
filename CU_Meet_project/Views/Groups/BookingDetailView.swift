@@ -76,8 +76,8 @@ struct BookingDetailView: View {
                         }
                     }
                     
-                    if booking.date >= Calendar.current.startOfDay(for: Date()) {
-                            
+                    if bookingStore.isUpcoming(booking) {
+
                             Button("Cancel Booking") {
                                 showCancelAlert = true
                             }
@@ -97,6 +97,7 @@ struct BookingDetailView: View {
                         Task {
                             do {
                                 try await bookingStore.cancelBooking(booking)
+                                NotificationManager.shared.cancelReminder(for: booking.id)
                                 dismiss()
                             } catch {
                                 errorMessage = error.localizedDescription

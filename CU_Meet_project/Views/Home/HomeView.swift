@@ -12,7 +12,8 @@ struct HomeView: View {
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var groupStore: GroupStore
     @EnvironmentObject var authManager: AuthManager
-    
+    @State private var testNotificationScheduled = false
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
@@ -37,6 +38,21 @@ struct HomeView: View {
                 Spacer()
             }
             .navigationTitle("Home")
+            #if DEBUG
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        NotificationManager.shared.scheduleTestReminder()
+                        testNotificationScheduled = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            testNotificationScheduled = false
+                        }
+                    } label: {
+                        Image(systemName: testNotificationScheduled ? "checkmark.circle.fill" : "bell.badge")
+                    }
+                }
+            }
+            #endif
         }
     }
     

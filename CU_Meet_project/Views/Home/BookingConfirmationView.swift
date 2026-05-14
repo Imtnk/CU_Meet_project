@@ -97,6 +97,7 @@ struct BookingConfirmationView: View {
                     Task {
                         do {
                             try await bookingStore.addBooking(booking)
+                            NotificationManager.shared.scheduleReminder(for: booking)
                             onComplete()
                         } catch {
                             errorMessage = error.localizedDescription
