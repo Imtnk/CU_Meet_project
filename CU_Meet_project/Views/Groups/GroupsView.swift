@@ -8,83 +8,71 @@
 import SwiftUI
 
 struct GroupsView: View {
-    
+
     @EnvironmentObject var groupStore: GroupStore
     @EnvironmentObject var authManager: AuthManager
-
     @State private var showCreate = false
     @State private var showJoin = false
-    
-    @State private var showLeaveAlert = false
-    
+    @State private var showActionSheet = false
+
+    private var myGroups: [Group] {
+        groupStore.myGroups(currentUserID: authManager.currentUserID)
+    }
+
     var body: some View {
         NavigationStack {
-            
-            Spacer()
-            VStack(spacing: 20) {
-                
-                Text("Your Groups")
-                    .font(.title)
-                
-                if groupStore.isLoading {
-                    ProgressView("Loading groups…")
-                        .frame(maxWidth: .infinity, alignment: .center)
-                } else if groupStore.myGroups(currentUserID: authManager.currentUserID).isEmpty {
-                    Text("No groups yet")
-                        .foregroundColor(.gray)
-                } else {
-                    HStack{
-                        List(groupStore.myGroups(currentUserID: authManager.currentUserID)) { group in
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    if groupStore.isLoading {
+                        ProgressView("Loading groups…")
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 40)
+                    } else if myGroups.isEmpty {
+                        VStack(spacing: 16) {
+                            Image(systemName: "person.3.fill")
+                                .font(.system(size: 52))
+                                .foregroundColor(.mutedGray)
+                            Text("No groups yet")
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.charcoal)
+                            Text("Tap + to create or join a group")
+                                .font(.subheadline)
+                                .foregroundColor(.mutedGray)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 60)
+                    } else {
+                        ForEach(myGroups) { group in
                             NavigationLink(destination: GroupDetailView(group: group)) {
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(group.name)
-                                            .font(.title2)
-                                        
-                                        Text("Code: \(group.joinCode)")
-                                            .font(.headline)
-                                            .foregroundColor(.gray)
-                                        
-                                        Text("\(group.memberCount) members")
-                                            .font(.caption2)
-                                            .foregroundColor(.gray)
-                                    }
-                                    Spacer()
-                                }
+                                GroupCard(group: group)
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
-                
-                Spacer()
-                
-                VStack(spacing: 12) {
-                    
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 20)
+            }
+            .background(Color.warmGray.ignoresSafeArea())
+            .navigationTitle("Groups")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        showCreate = true
+                        showActionSheet = true
                     } label: {
-                        Text("Create Group")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
-                    
-                    Button {
-                        showJoin = true
-                    } label: {
-                        Text("Join Group")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.green)
-                            .foregroundColor(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        Image(systemName: "plus")
+                            .fontWeight(.semibold)
+                            .foregroundColor(.brandPink)
                     }
                 }
-                .padding()
             }
-            .navigationTitle("Groups")
+            .confirmationDialog("Group Options", isPresented: $showActionSheet) {
+                Button("Create Group") { showCreate = true }
+                Button("Join Group")   { showJoin   = true }
+                Button("Cancel", role: .cancel) {}
+            }
             .onAppear {
                 groupStore.startListening(for: authManager.currentUserID ?? "")
             }
@@ -106,4 +94,3 @@ struct GroupsView: View {
         }
     }
 }
-
