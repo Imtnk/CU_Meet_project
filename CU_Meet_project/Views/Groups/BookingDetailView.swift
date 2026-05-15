@@ -85,7 +85,7 @@ struct BookingDetailView: View {
                                         onTap: {
                                             selectedMember =
                                                 userStore.user(by: memberID)
-                                                ?? AppUser.fallbackUser(id: memberID)
+                                                ?? AppUser.unknownUser
 
                                             showMemberDetail = true
                                         }

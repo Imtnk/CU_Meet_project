@@ -13,10 +13,6 @@ final class UserStore: ObservableObject {
     @Published private(set) var usersByID: [String: AppUser] = [:]
     private var fetchingUserIDs: Set<String> = []
 
-    init(seed: [AppUser] = AppUser.devSeed) {
-        seed.forEach { upsert($0) }
-    }
-
     func upsert(_ user: AppUser) {
 
         if let existing = usersByID[user.id] {
@@ -73,29 +69,16 @@ final class UserStore: ObservableObject {
             }
         }
 
-        // Use seeded fallback instead of generic "User"
-        return AppUser.devSeed
-            .first(where: { $0.id == userID })?
-            .displayName
-            ?? AppUser.fallbackUser(id: userID).displayName
+        return "Unknown User"
     }
 
     func user(by userID: String) -> AppUser? {
 
-        // Already loaded
         if let user = usersByID[userID] {
             return user
         }
 
-        // IMPORTANT:
-        // Return seeded mock user immediately
-        if let mockUser =
-            AppUser.devSeed.first(where: { $0.id == userID }) {
-
-            return mockUser
-        }
-
-        // Fetch real Firestore user if needed
+        // Fetch from Firestore if needed
         if !fetchingUserIDs.contains(userID) {
 
             fetchingUserIDs.insert(userID)
@@ -122,7 +105,6 @@ final class UserStore: ObservableObject {
             }
         }
 
-        // Last fallback only
-        return AppUser.fallbackUser(id: userID)
+        return nil
     }
 }

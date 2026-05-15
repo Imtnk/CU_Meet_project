@@ -27,14 +27,10 @@ class HomeViewModel: ObservableObject {
 
     func loadRooms() async {
         do {
-            var fetched = try await FirestoreService.shared.fetchRooms()
-            if fetched.isEmpty {
-                try await FirestoreService.shared.seedRooms(Self.seedRooms)
-                fetched = Self.seedRooms
-            }
+            let fetched = try await FirestoreService.shared.fetchRooms()
             await MainActor.run { self.rooms = fetched }
         } catch {
-            await MainActor.run { self.rooms = Self.seedRooms }
+            print("Failed to load rooms:", error)
         }
     }
 
@@ -97,48 +93,4 @@ class HomeViewModel: ObservableObject {
         return 30 - (t * 12)  // 30 zoomed-in → 18 zoomed-out
     }
 
-    // MARK: - Seed data (stable IDs so Firestore doesn't create duplicates)
-
-    static let seedRooms: [MeetingRoom] = [
-        MeetingRoom(
-            id: "room_engineering",
-            name: "Engineering Room",
-            latitude: 13.7365, longitude: 100.5325,
-            rating: 4.7, reviewCount: 32,
-            facilities: [.projector, .whiteboard, .wifi, .aircon, .powerOutlets],
-            capacity: 10, imageAssetName: "meeting_room1"
-        ),
-        MeetingRoom(
-            id: "room_library",
-            name: "Library Room",
-            latitude: 13.7370, longitude: 100.5340,
-            rating: 4.5, reviewCount: 21,
-            facilities: [.wifi, .powerOutlets],
-            capacity: 6, imageAssetName: "meeting_room2"
-        ),
-        MeetingRoom(
-            id: "room_business",
-            name: "Business Room",
-            latitude: 13.7358, longitude: 100.5338,
-            rating: 4.6, reviewCount: 18,
-            facilities: [.tv, .videoConference, .wifi, .aircon],
-            capacity: 8, imageAssetName: "meeting_room3"
-        ),
-        MeetingRoom(
-            id: "room_lecture",
-            name: "Lecture Hall",
-            latitude: 13.7372, longitude: 100.5285,
-            rating: 4.8, reviewCount: 45,
-            facilities: [.projector, .aircon, .powerOutlets],
-            capacity: 50, imageAssetName: "meeting_room4"
-        ),
-        MeetingRoom(
-            id: "room_medical",
-            name: "Medical Conference Room",
-            latitude: 13.7340, longitude: 100.5355,
-            rating: 4.9, reviewCount: 27,
-            facilities: [.projector, .videoConference, .wifi, .aircon, .powerOutlets],
-            capacity: 12, imageAssetName: "meeting_room5"
-        ),
-    ]
 }

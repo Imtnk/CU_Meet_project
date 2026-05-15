@@ -25,18 +25,6 @@ final class FirestoreService {
         return try snapshot.documents.map { try $0.data(as: MeetingRoom.self) }
     }
 
-    /// One-time seed — writes the hardcoded rooms array to Firestore as a batch.
-    func seedRooms(_ rooms: [MeetingRoom]) async throws {
-        let batch = db.batch()
-        let encoder = Firestore.Encoder()
-        for room in rooms {
-            let ref = db.collection(C.rooms).document(room.id)
-            let data = try encoder.encode(room)
-            batch.setData(data, forDocument: ref)
-        }
-        try await batch.commit()
-    }
-
     // MARK: - Users
 
     func upsertUser(_ user: AppUser) async throws {
@@ -62,19 +50,6 @@ final class FirestoreService {
         try await db.collection(C.users).document(userID).setData(fields, merge: true)
     }
     
-    func seedUsers(_ users: [AppUser]) async throws {
-        let batch = db.batch()
-        let encoder = Firestore.Encoder()
-
-        for user in users {
-            let ref = db.collection(C.users).document(user.id)
-            let data = try encoder.encode(user)
-            batch.setData(data, forDocument: ref)
-        }
-
-        try await batch.commit()
-    }
-
     // MARK: - Groups
 
     /// Real-time listener scoped to groups where the user is a member.
@@ -259,47 +234,4 @@ final class FirestoreService {
         }
     }
 
-    // MARK: - Mock Data (DEBUG only)
-
-    func seedMockData(currentUserID: String) async throws {
-        try await seedUsers(AppUser.devSeed)
-        let encoder = Firestore.Encoder()
-        let cal = Calendar.current
-        let today = cal.startOfDay(for: Date())
-
-        // Groups — written in a separate batch (rules allow any authenticated user)
-        // Current user is added to Alpha so their bookings appear on Home.
-        // Uses seeded user IDs (u1, u2, u3) which have full profile data available.
-        let alphaMembers = ["u1", "u2", currentUserID]
-            .filter { !$0.isEmpty }
-        let mockGroups: [Group] = [
-            Group(id: "mock_group_alpha", name: "Alpha Team", joinCode: "000001", memberIDs: alphaMembers),
-            Group(id: "mock_group_beta",  name: "Beta Team",  joinCode: "000002", memberIDs: ["u2", "u3"]),
-        ]
-        let groupBatch = db.batch()
-        for group in mockGroups {
-            let ref = db.collection(C.groups).document(group.id)
-            groupBatch.setData(try encoder.encode(group), forDocument: ref)
-        }
-        try await groupBatch.commit()
-
-        // Bookings — future dates so they surface in upcomingBookings()
-        let mockBookings: [Booking] = [
-            Booking(id: "mock_booking_1", roomID: "room_engineering", roomName: "Engineering Room",
-                    groupID: "mock_group_alpha", date: cal.date(byAdding: .day, value: 1, to: today)!,
-                    timeSlot: "09:00 - 10:00", imageAssetName: nil),
-            Booking(id: "mock_booking_2", roomID: "room_library",     roomName: "Library Room",
-                    groupID: "mock_group_beta",  date: cal.date(byAdding: .day, value: 2, to: today)!,
-                    timeSlot: "14:00 - 15:00", imageAssetName: nil),
-            Booking(id: "mock_booking_3", roomID: "room_business",    roomName: "Business Room",
-                    groupID: "mock_group_alpha", date: cal.date(byAdding: .day, value: 3, to: today)!,
-                    timeSlot: "11:00 - 12:00", imageAssetName: nil),
-        ]
-        let bookingBatch = db.batch()
-        for booking in mockBookings {
-            let ref = db.collection(C.bookings).document(booking.id)
-            bookingBatch.setData(try encoder.encode(booking), forDocument: ref)
-        }
-        try await bookingBatch.commit()
-    }
 }

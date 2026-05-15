@@ -56,7 +56,13 @@ struct RoomFeatureCard: View {
 }
 
 #Preview {
-    RoomFeatureCard(room: HomeViewModel.seedRooms[0])
+    RoomFeatureCard(room: MeetingRoom(
+        id: "preview", name: "Engineering Room",
+        latitude: 13.7365, longitude: 100.5325,
+        rating: 4.7, reviewCount: 32,
+        facilities: [.projector, .whiteboard],
+        capacity: 10, imageAssetName: "meeting_room1"
+    ))
         .frame(height: 200)
         .padding()
 }

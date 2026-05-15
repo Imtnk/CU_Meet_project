@@ -10,11 +10,6 @@ struct MemberDetailView: View {
     let memberID: String
 
     @EnvironmentObject var userStore: UserStore
-
-    private var member: AppUser {
-        userStore.user(by: memberID)
-        ?? AppUser.fallbackUser(id: memberID)
-    }
     @Environment(\.dismiss) var dismiss
     @State private var isLoading = false
 
@@ -142,8 +137,7 @@ struct MemberDetailView: View {
     }
 
     private var displayMember: AppUser {
-        userStore.user(by: memberID)
-        ?? AppUser.fallbackUser(id: memberID)
+        userStore.user(by: memberID) ?? AppUser.unknownUser
     }
 
     private var hasCUProfileData: Bool {
@@ -156,11 +150,6 @@ struct MemberDetailView: View {
     }
 
     private func fetchFullMemberData() async {
-
-        // Skip fetch for mock users    
-        if AppUser.devSeed.contains(where: { $0.id == memberID }) {
-            return
-        }
 
         isLoading = true
 
