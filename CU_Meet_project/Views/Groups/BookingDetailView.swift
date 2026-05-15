@@ -116,7 +116,7 @@ struct BookingDetailView: View {
                                 Text("Notes")
                                     .font(.headline).foregroundColor(.charcoal)
                                 Spacer()
-                                if bookingStore.isUpcoming(booking) && !isEditingNotes {
+                                if bookingStore.isUpcoming(booking) && !isEditingNotes && booking.creatorID == authManager.currentUserID {
                                     Button("Edit") {
                                         editedNotes = booking.notes ?? ""
                                         isEditingNotes = true

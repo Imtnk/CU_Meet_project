@@ -189,6 +189,7 @@ struct RoomDetailView: View {
                 )
                 .environmentObject(bookingStore)
                 .environmentObject(groupStore)
+                .environmentObject(authManager)
             }
         }
     }

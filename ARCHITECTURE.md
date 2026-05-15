@@ -102,6 +102,8 @@ struct Booking {
     var imageAssetName: String?
     /// Optional agenda or note attached to the booking; mutable for inline editing.
     var notes: String?
+    /// Firebase UID of the user who created the booking; `nil` for legacy bookings.
+    let creatorID: String?
 }
 ```
 - **Lifecycle:** Created in BookingConfirmationView, persisted to Firestore, displayed and editable in BookingDetailView

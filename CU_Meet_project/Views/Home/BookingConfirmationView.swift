@@ -22,6 +22,7 @@ struct BookingConfirmationView: View {
     
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var groupStore: GroupStore
+    @EnvironmentObject var authManager: AuthManager
     
     @Environment(\.dismiss) var dismiss
     /// Closure invoked after the booking is successfully persisted.
@@ -131,7 +132,8 @@ struct BookingConfirmationView: View {
                         date: selectedDate,
                         timeSlot: selectedTime,
                         imageAssetName: room.imageAssetName,
-                        notes: notes.trimmingCharacters(in: .whitespacesAndNewlines).nonEmpty
+                        notes: notes.trimmingCharacters(in: .whitespacesAndNewlines).nonEmpty,
+                        creatorID: authManager.currentUserID
                     )
                     Task {
                         do {

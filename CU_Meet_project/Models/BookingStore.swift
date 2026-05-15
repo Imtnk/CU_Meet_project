@@ -26,6 +26,8 @@ struct Booking: Identifiable, Codable, Equatable {
     let imageAssetName: String?
     /// Optional agenda or note attached to the booking.
     var notes: String?
+    /// The Firebase UID of the user who created the booking; `nil` for legacy bookings.
+    let creatorID: String?
 }
 
 /// Observable store that syncs all bookings from Firestore in real time.
