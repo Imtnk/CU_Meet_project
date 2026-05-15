@@ -12,12 +12,18 @@ import FirebaseAuth
 import FirebaseFirestore
 import Combine
 
+/// Owns Google Sign‑In and Firebase Authentication state, bridges the
+/// `GIDGoogleUser` profile to `AppUser`, and persists optional profile fields.
 class AuthManager: ObservableObject {
+    /// Whether there is a known user identity (Google‑UID based).
     @Published var isLoggedIn: Bool = false
+    /// The raw Google sign‑in profile (name, email, avatar).
     @Published var userProfile: GIDGoogleUser?
+    /// Firebase UID of the currently signed‑in user.
     @Published var currentUserID: String?
     /// True only when Firebase Auth established a real session (not the Google-UID fallback).
     @Published var isFirebaseAuthenticated: Bool = false
+    /// Non‑nil when the most recent sign‑in attempt failed.
     @Published var signInError: String?
     /// Full profile including optional fields loaded from Firestore.
     @Published var extendedProfile: AppUser?

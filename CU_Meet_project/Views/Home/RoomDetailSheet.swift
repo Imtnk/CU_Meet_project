@@ -5,8 +5,10 @@
 
 import SwiftUI
 
+/// Bottom sheet presenting a room's image, rating, capacity, and facility grid.
 struct RoomDetailSheet: View {
 
+    /// Room whose details are displayed.
     let room: MeetingRoom
 
     var body: some View {

@@ -5,10 +5,16 @@
 
 import SwiftUI
 
+/// Tappable row showing a member's avatar, display name, and a "You" badge
+/// when the row represents the current user.
 struct MemberRowView: View {
+    /// Firebase UID of the member.
     let memberID: String
+    /// Pre‑resolved display name.
     let displayName: String
+    /// Whether this row represents the signed‑in user.
     let isCurrentUser: Bool
+    /// Action triggered when the row is tapped.
     let onTap: () -> Void
 
     var body: some View {

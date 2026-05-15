@@ -8,11 +8,17 @@
 import Foundation
 import Combine
 
+/// In‑memory cache of `AppUser` objects keyed by Firebase UID. Automatically
+/// fetches unknown users from Firestore on demand.
 final class UserStore: ObservableObject {
 
+    /// All cached users, keyed by their Firebase UID.
     @Published private(set) var usersByID: [String: AppUser] = [:]
+    /// Set of user IDs currently being fetched (prevents duplicate network calls).
     private var fetchingUserIDs: Set<String> = []
 
+    /// Inserts or merges a user into the cache. Existing fields not present on the
+    /// incoming value are preserved.
     func upsert(_ user: AppUser) {
 
         if let existing = usersByID[user.id] {
@@ -40,6 +46,8 @@ final class UserStore: ObservableObject {
         }
     }
 
+    /// Returns the cached display name for a user, or triggers an async fetch and
+    /// returns "Unknown User" until the data arrives.
     func displayName(for userID: String) -> String {
 
         if let user = usersByID[userID] {
@@ -72,6 +80,8 @@ final class UserStore: ObservableObject {
         return "Unknown User"
     }
 
+    /// Returns the cached user for the given UID, or triggers an async fetch and
+    /// returns `nil` until the data arrives.
     func user(by userID: String) -> AppUser? {
 
         if let user = usersByID[userID] {

@@ -6,6 +6,7 @@
 import Foundation
 import FirebaseFirestore
 
+/// Singleton gateway for all Firestore reads and writes.
 final class FirestoreService {
 
     static let shared = FirestoreService()
@@ -20,6 +21,7 @@ final class FirestoreService {
 
     // MARK: - Rooms
 
+    /// Fetches all meeting rooms.
     func fetchRooms() async throws -> [MeetingRoom] {
         let snapshot = try await db.collection(C.rooms).getDocuments()
         return try snapshot.documents.map { try $0.data(as: MeetingRoom.self) }
@@ -27,18 +29,21 @@ final class FirestoreService {
 
     // MARK: - Users
 
+    /// Creates or merges the user document; existing fields absent from `user` are preserved.
     func upsertUser(_ user: AppUser) async throws {
         let ref = db.collection(C.users).document(user.id)
         let data = try Firestore.Encoder().encode(user)
         try await ref.setData(data, merge: true)
     }
 
+    /// Returns nil when the user document does not exist.
     func fetchUser(userID: String) async throws -> AppUser? {
         let doc = try await db.collection(C.users).document(userID).getDocument()
         guard doc.exists else { return nil }
         return try? doc.data(as: AppUser.self)
     }
-    
+
+    /// Returns every user document in the collection.
     func fetchAllUsers() async throws -> [AppUser] {
         let snapshot = try await db.collection(C.users).getDocuments()
         return try snapshot.documents.map {
@@ -46,10 +51,11 @@ final class FirestoreService {
         }
     }
 
+    /// Performs a partial update; fields not present in `fields` are left unchanged.
     func updateUserFields(userID: String, fields: [String: Any]) async throws {
         try await db.collection(C.users).document(userID).setData(fields, merge: true)
     }
-    
+
     // MARK: - Groups
 
     /// Real-time listener scoped to groups where the user is a member.
@@ -63,6 +69,7 @@ final class FirestoreService {
             }
     }
 
+    /// Returns the first group whose join code matches `code`, or nil if none is found.
     func fetchGroup(byJoinCode code: String) async throws -> Group? {
         let snapshot = try await db.collection(C.groups)
             .whereField("joinCode", isEqualTo: code)
@@ -72,6 +79,8 @@ final class FirestoreService {
         return try doc.data(as: Group.self)
     }
 
+    /// Generates a random 6-digit code that does not collide with any existing group's join code.
+    /// - Throws: `AppError.uniqueCodeGenerationFailed` after 10 unsuccessful attempts.
     func generateUniqueJoinCode() async throws -> String {
         var code = ""
         var isUnique = false
@@ -91,6 +100,7 @@ final class FirestoreService {
         return code
     }
 
+    /// Writes a new group document; the group's `id` is used as the Firestore document key.
     func createGroup(_ group: Group) async throws {
         let ref = db.collection(C.groups).document(group.id)
         let data = try Firestore.Encoder().encode(group)
@@ -104,6 +114,7 @@ final class FirestoreService {
             .updateData(["memberIDs": memberIDs])
     }
 
+    /// Deletes the group and all its associated bookings atomically via a batched write.
     func deleteGroup(id: String) async throws {
         let bookingDocs = try await db.collection(C.bookings)
             .whereField("groupID", isEqualTo: id)
@@ -132,12 +143,14 @@ final class FirestoreService {
             }
     }
 
+    /// Writes a new booking document; the booking's `id` is used as the Firestore document key.
     func addBooking(_ booking: Booking) async throws {
         let ref = db.collection(C.bookings).document(booking.id)
         let data = try Firestore.Encoder().encode(booking)
         try await ref.setData(data)
     }
 
+    /// Updates only the `status` field of an existing booking document.
     func updateBookingStatus(id: String, status: BookingStatus) async throws {
         try await db.collection(C.bookings)
             .document(id)

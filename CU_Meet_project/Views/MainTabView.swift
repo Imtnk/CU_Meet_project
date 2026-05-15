@@ -1,12 +1,18 @@
 import SwiftUI
 
+/// Root tab container that switches between Home, Groups, and Profile tabs.
 struct MainTabView: View {
 
+    /// Shared authentication state used to gate tab content and drive store listeners.
     @EnvironmentObject var authManager: AuthManager
+    /// Shared group data source; listening is started/stopped as auth state changes.
     @EnvironmentObject var groupStore: GroupStore
+    /// Shared booking data source; listening is started/stopped as auth state changes.
     @EnvironmentObject var bookingStore: BookingStore
+    /// Currently selected tab.
     @State private var selectedTab: Tab = .home
 
+    /// Identifiers for the three main application tabs.
     enum Tab {
         case home, groups, profile
     }
@@ -76,6 +82,7 @@ struct MainTabView: View {
     }
 }
 
+/// Placeholder shown in a tab when the user is not signed in.
 private struct SignInRequiredView: View {
     var body: some View {
         NavigationStack {

@@ -6,17 +6,25 @@
 import SwiftUI
 import GoogleSignIn
 
+/// Sheet for creating a new group; reveals the generated join code on success.
 struct CreateGroupView: View {
 
+    /// Performs the group creation request.
     @EnvironmentObject var groupStore: GroupStore
+    /// Supplies the creator's user ID.
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) var dismiss
 
+    /// Text entered by the user as the group name.
     @State private var groupName = ""
+    /// Populated after a successful creation to show the join code.
     @State private var createdGroup: Group?
+    /// True while the async create request is in-flight.
     @State private var isCreating = false
+    /// Non-nil when group creation fails; drives the error alert.
     @State private var errorMessage: String?
 
+    /// True when the trimmed name is non-empty and at most 100 characters.
     var isValidName: Bool {
         let trimmed = groupName.trimmingCharacters(in: .whitespaces)
         return !trimmed.isEmpty && trimmed.count <= 100

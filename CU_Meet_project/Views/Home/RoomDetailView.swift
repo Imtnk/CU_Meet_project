@@ -5,25 +5,37 @@
 
 import SwiftUI
 
+/// Detailed view of a single meeting room with facilities, rating, and booking flow.
 struct RoomDetailView: View {
 
+    /// Room whose details are being displayed.
     let room: MeetingRoom
+    /// View model used to load room data and submit star ratings.
     @StateObject private var viewModel = HomeViewModel()
 
-    // Rating
+    /// Star count chosen by the current user (0 = no rating yet).
     @State private var userRating: Int = 0
+    /// True while a rating write is in flight.
     @State private var isSubmittingRating = false
+    /// Non-nil when a rating submission fails.
     @State private var ratingError: String?
+    /// True briefly after a successful rating write to show confirmation text.
     @State private var ratingUpdated = false
+    /// Running average rating updated optimistically after each submission.
     @State private var liveRating: Double = 0
+    /// Running review count updated optimistically after each submission.
     @State private var liveReviewCount: Int = 0
 
+    /// Date chosen by the user for their booking.
     @State private var selectedDate = Date()
+    /// Time slot chosen by the user (nil when none is selected).
     @State private var selectedTime: String? = nil
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var groupStore: GroupStore
     @EnvironmentObject var authManager: AuthManager
+    /// Group the user has selected to attach to the booking.
     @State private var selectedGroupID: String? = nil
+    /// Controls presentation of the BookingConfirmationView sheet.
     @State private var showConfirmationSheet = false
     @Environment(\.dismiss) var dismiss
 
@@ -182,6 +194,7 @@ struct RoomDetailView: View {
     }
 
     // MARK: - Section container helper
+    /// Wraps content in a white rounded card with a soft drop shadow.
     @ViewBuilder
     private func sectionCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()
@@ -194,6 +207,7 @@ struct RoomDetailView: View {
     }
 
     // MARK: - Booking section
+    /// Date picker, group picker, time-slot grid, and reserve button composed together.
     private var bookingSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Book This Room")
@@ -255,6 +269,7 @@ struct RoomDetailView: View {
     }
 
     // MARK: - Group picker
+    /// Drop-down menu for choosing which group to attach to this booking.
     private var groupPickerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Select Group")
@@ -288,11 +303,13 @@ struct RoomDetailView: View {
     }
 
     // MARK: - Helpers
+    /// Display name for the selected group, or a placeholder when nothing is chosen.
     private var selectedGroupName: String {
         guard let id = selectedGroupID else { return "Choose a group" }
         return groupStore.groupName(for: id)
     }
 
+    /// Returns true when the given slot's start time has already passed on `date`.
     private func isPastSlot(_ slot: String, on date: Date) -> Bool {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
@@ -309,9 +326,11 @@ struct RoomDetailView: View {
         return combined < Date()
     }
 
+    /// Returns true when this slot is already booked for the selected room and date.
     private func isBooked(slot: String) -> Bool {
         bookingStore.isBooked(roomID: room.id, date: selectedDate, timeSlot: slot)
     }
 
+    /// True when both a time slot and a group have been selected.
     private var canProceed: Bool { selectedTime != nil && selectedGroupID != nil }
 }

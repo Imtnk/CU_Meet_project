@@ -6,19 +6,27 @@
 import SwiftUI
 import MapKit
 
+/// Map and list view for discovering and searching meeting rooms.
 struct RoomMapView: View {
 
     @StateObject private var viewModel = HomeViewModel()
+    /// Rooms tapped most recently, capped at three entries.
     @State private var recentRooms: [MeetingRoom] = []
+    /// Text entered in the search field.
     @State private var searchText = ""
+    /// Controls presentation of the FilterSheet.
     @State private var showFilters = false
+    /// Facilities that must all be present on a room to pass the filter.
     @State private var selectedFacilities: Set<Facility> = []
+    /// Minimum room capacity to include in results.
     @State private var minCapacity = 1
 
+    /// True when any search text or filter criterion is active.
     private var isFiltering: Bool {
         !searchText.isEmpty || !selectedFacilities.isEmpty || minCapacity > 1
     }
 
+    /// Rooms from the view model that satisfy the current search text and filter criteria.
     private var filteredRooms: [MeetingRoom] {
         viewModel.rooms.filter { room in
             let matchesSearch = searchText.isEmpty ||
@@ -30,12 +38,14 @@ struct RoomMapView: View {
         }
     }
 
+    /// Prepends `room` to the recent list and trims it to three entries.
     private func addToRecent(_ room: MeetingRoom) {
         recentRooms.removeAll { $0.id == room.id }
         recentRooms.insert(room, at: 0)
         if recentRooms.count > 3 { recentRooms = Array(recentRooms.prefix(3)) }
     }
 
+    /// True when a non-default filter criterion is set (ignores free-text search).
     private var hasActiveFilter: Bool {
         !selectedFacilities.isEmpty || minCapacity > 1
     }
@@ -147,6 +157,7 @@ struct RoomMapView: View {
     }
 
     // MARK: - Room row card
+    /// Row card showing the room thumbnail, name, capacity, and rating.
     @ViewBuilder
     private func roomRow(_ room: MeetingRoom) -> some View {
         HStack(spacing: 12) {
@@ -178,6 +189,7 @@ struct RoomMapView: View {
     }
 
     // MARK: - Map controls
+    /// Zoom-in, zoom-out, and reset-position buttons overlaid on the map.
     private var mapControls: some View {
         VStack(spacing: 8) {
             ForEach([
@@ -200,8 +212,11 @@ struct RoomMapView: View {
 }
 
 // MARK: - Filter Sheet
+/// Modal sheet for filtering rooms by required facilities and minimum capacity.
 struct FilterSheet: View {
+    /// Facilities that must all be present on a room to match.
     @Binding var selectedFacilities: Set<Facility>
+    /// Minimum room capacity required to match.
     @Binding var minCapacity: Int
     @Environment(\.dismiss) var dismiss
 

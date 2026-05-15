@@ -1,9 +1,14 @@
 import SwiftUI
 
+/// Compact row card showing a future booking's group, room, time slot, and date.
 struct UpcomingBookingCard: View {
+    /// Display name of the associated group.
     let groupName: String
+    /// Display name of the booked room.
     let roomName: String
+    /// Time range string (e.g. "09:00 - 11:00").
     let timeSlot: String
+    /// Calendar date of the booking.
     let date: Date
 
     var body: some View {
@@ -37,6 +42,7 @@ struct UpcomingBookingCard: View {
         .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
     }
 
+    /// Formats a date to a short "dd MMM" string.
     private func formattedDate(_ date: Date) -> String {
         let f = DateFormatter()
         f.dateFormat = "dd MMM"

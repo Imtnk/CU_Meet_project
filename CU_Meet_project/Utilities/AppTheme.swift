@@ -1,20 +1,33 @@
 import SwiftUI
 
+/// Central repository for app-wide design tokens: colors and corner radii.
 enum AppTheme {
     // MARK: - Colours
+
+    /// Primary brand accent color.
     static let brandPink     = Color(hex: "E8446A")
+    /// Tinted background used behind pink UI elements.
     static let brandPinkLight = Color(hex: "FDEEF2")
+    /// Pressed/active state for brand-pink interactive elements.
     static let brandPinkDark  = Color(hex: "C02D53")
+    /// Primary text and icon color.
     static let charcoal      = Color(hex: "1A1A2E")
+    /// Default page background color.
     static let warmGray      = Color(hex: "F7F4F2")
+    /// Secondary and placeholder text color.
     static let mutedGray     = Color(hex: "8E8E9A")
 
     // MARK: - Radii
+
+    /// Corner radius for card containers.
     static let cardRadius:   CGFloat = 16
+    /// Corner radius for filter chips and tags.
     static let chipRadius:   CGFloat = 20
+    /// Corner radius for primary action buttons.
     static let buttonRadius: CGFloat = 14
 }
 
+/// Exposes `AppTheme` palette tokens as `Color` static members for ergonomic use in SwiftUI.
 extension Color {
     // MARK: - Convenience
     static let brandPink      = AppTheme.brandPink
@@ -25,6 +38,8 @@ extension Color {
     static let mutedGray      = AppTheme.mutedGray
 
     // MARK: - Hex init
+
+    /// Creates a `Color` from a CSS-style hex string in `#RGB`, `#RRGGBB`, or `#RRGGBBAA` format.
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0

@@ -9,8 +9,12 @@ import SwiftUI
 import GoogleSignInSwift
 import GoogleSignIn
 
+/// Profile screen showing the signed‑in user's avatar, Google account info,
+/// editable CU profile fields, and a sign‑out button. When not logged in it
+/// displays a welcome message and Google Sign‑In button.
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
+    /// Whether the edit-profile sheet is presented.
     @State private var showEditProfile = false
     #if DEBUG
     @State private var seedAlert: String?
@@ -152,11 +156,13 @@ struct ProfileView: View {
         .background(Color.warmGray.ignoresSafeArea())
     }
 
+    /// Whether the user has any non‑empty optional profile fields to display.
     private func hasDetails(_ p: AppUser) -> Bool {
         [p.studentID, p.faculty, p.year, p.mostActiveDay].contains(where: { $0?.isEmpty == false })
         || p.birthdate != nil
     }
 
+    /// Card listing the user's optional CU profile and personal details.
     @ViewBuilder
     private func profileDetailsCard(_ p: AppUser) -> some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -183,6 +189,7 @@ struct ProfileView: View {
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
 
+    /// Single row inside a details card: icon, label, and value.
     @ViewBuilder
     private func profileRow(icon: String, label: String, value: String) -> some View {
         HStack(spacing: 10) {
@@ -201,6 +208,7 @@ struct ProfileView: View {
         }
     }
 
+    /// Formats a date as "dd MMM yyyy".
     private func birthdayString(_ date: Date) -> String {
         let f = DateFormatter()
         f.dateFormat = "dd MMM yyyy"

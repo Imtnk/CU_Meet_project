@@ -6,6 +6,8 @@
 import SwiftUI
 import GoogleSignIn
 
+/// Form sheet for editing the user's CU profile fields: nickname, student ID,
+/// faculty, year, birthdate, and most active day.
 struct EditProfileView: View {
 
     @EnvironmentObject private var authManager: AuthManager
@@ -17,12 +19,15 @@ struct EditProfileView: View {
     @State private var year: String = ""
     @State private var mostActiveDay: String = ""
     @State private var birthdate: Date = Date()
+    /// Whether the birthdate field is enabled.
     @State private var hasBirthdate: Bool = false
 
     @State private var isSaving = false
     @State private var studentIDError: String?
 
+    /// Weekday options for the "Most Active Day" picker.
     private let weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    /// Year‑of‑study options for the picker.
     private let years    = ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5+", "Graduate"]
 
     var body: some View {
@@ -91,6 +96,7 @@ struct EditProfileView: View {
         }
     }
 
+    /// Populates form fields from the authenticated user's existing profile.
     private func loadCurrentValues() {
         guard let p = authManager.extendedProfile else { return }
         nickname      = p.nickname      ?? ""
@@ -104,11 +110,13 @@ struct EditProfileView: View {
         }
     }
 
+    /// Returns an error message if the student ID is non‑empty but not exactly 10 digits.
     private func validateStudentID(_ id: String) -> String? {
         guard !id.isEmpty else { return nil }
         return id.count == 10 ? nil : "Student ID must be exactly 10 digits"
     }
 
+    /// Validates and persists the edited profile fields via `AuthManager`.
     private func save() {
         guard studentIDError == nil else { return }
         isSaving = true

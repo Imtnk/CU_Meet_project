@@ -5,13 +5,16 @@
 
 import SwiftUI
 import Foundation
-import GoogleSignIn
 
+/// Detail view for a group member, showing their Google account info, CU
+/// profile fields, and personal details fetched from Firestore.
 struct MemberDetailView: View {
+    /// Firebase UID of the member to display.
     let memberID: String
 
     @EnvironmentObject var userStore: UserStore
     @Environment(\.dismiss) var dismiss
+    /// Whether a Firestore fetch for full member data is in progress.
     @State private var isLoading = false
 
     var body: some View {
@@ -147,19 +150,23 @@ struct MemberDetailView: View {
         }
     }
 
+    /// The resolved `AppUser` for `memberID`, falling back to an unknown placeholder.
     private var displayMember: AppUser {
         userStore.user(by: memberID) ?? AppUser.unknownUser
     }
 
+    /// Whether the member has any CU profile fields to display.
     private var hasCUProfileData: Bool {
         displayMember.nickname != nil || displayMember.studentID != nil ||
         displayMember.faculty != nil || displayMember.year != nil
     }
 
+    /// Whether the member has any personal fields (birthdate, most active day) to display.
     private var hasPersonalData: Bool {
         displayMember.birthdate != nil || displayMember.mostActiveDay != nil
     }
 
+    /// Fetches the full `AppUser` document from Firestore and upserts it into the store.
     private func fetchFullMemberData() async {
 
         isLoading = true
@@ -183,6 +190,7 @@ struct MemberDetailView: View {
         }
     }
 
+    /// Reusable card wrapper with white background, rounded corners, and subtle shadow.
     @ViewBuilder
     private func profileDetailsCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()
@@ -193,6 +201,7 @@ struct MemberDetailView: View {
             .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
 
+    /// Single info row: uppercase label above the value text.
     @ViewBuilder
     private func profileRow(label: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -203,6 +212,7 @@ struct MemberDetailView: View {
         }
     }
 
+    /// Formats a date using `.medium` style.
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium

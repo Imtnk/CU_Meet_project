@@ -7,15 +7,19 @@ import Foundation
 import Combine
 import FirebaseFirestore
 
+/// A named collection of users who can share room bookings.
 struct Group: Identifiable, Codable, Equatable {
     let id: String
     let name: String
+    /// Short code members share to invite others.
     let joinCode: String
+    /// Firebase UIDs of every member.
     var memberIDs: [String]
 
     var memberCount: Int { memberIDs.count }
 }
 
+/// Observable store that syncs the current user's groups from Firestore in real time.
 class GroupStore: ObservableObject {
 
     @Published var groups: [Group] = []
@@ -24,6 +28,7 @@ class GroupStore: ObservableObject {
 
     deinit { listener?.remove() }
 
+    /// Attaches a Firestore listener scoped to groups `userID` belongs to.
     func startListening(for userID: String) {
         listener?.remove()
         guard !userID.isEmpty else {

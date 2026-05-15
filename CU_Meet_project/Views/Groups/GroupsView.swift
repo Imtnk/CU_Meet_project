@@ -7,14 +7,21 @@
 
 import SwiftUI
 
+/// Screen listing the current user's groups with options to create or join one.
 struct GroupsView: View {
 
+    /// Provides group data and real-time listener.
     @EnvironmentObject var groupStore: GroupStore
+    /// Provides the current user's ID for group membership filtering.
     @EnvironmentObject var authManager: AuthManager
+    /// Controls presentation of the Create Group sheet.
     @State private var showCreate = false
+    /// Controls presentation of the Join Group sheet.
     @State private var showJoin = false
+    /// Controls visibility of the create/join confirmation dialog.
     @State private var showActionSheet = false
 
+    /// Groups the current user belongs to.
     private var myGroups: [Group] {
         groupStore.myGroups(currentUserID: authManager.currentUserID)
     }

@@ -8,22 +8,31 @@
 import SwiftUI
 import GoogleSignIn
 
+/// Home screen showing a time-based greeting, room search, featured rooms carousel, and upcoming bookings.
 struct HomeView: View {
 
+    /// Provides booking data and loading state.
     @EnvironmentObject var bookingStore: BookingStore
+    /// Provides the user's group memberships.
     @EnvironmentObject var groupStore: GroupStore
+    /// Provides the signed-in user's identity and profile.
     @EnvironmentObject var authManager: AuthManager
+    /// Loads and holds the list of rooms for the Explore section.
     @StateObject private var viewModel = HomeViewModel()
+    /// Current page index in the auto-advancing featured rooms carousel.
     @State private var featureIndex = 0
     #if DEBUG
+    /// Tracks whether a test notification was recently triggered, to briefly show a checkmark.
     @State private var testNotificationScheduled = false
     #endif
 
+    /// The user's first given name, or "there" if unavailable.
     private var firstName: String {
         authManager.userProfile?.profile?.name
             .components(separatedBy: " ").first ?? "there"
     }
 
+    /// Time-of-day greeting based on the current hour.
     private var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
@@ -33,6 +42,7 @@ struct HomeView: View {
         }
     }
 
+    /// Upcoming bookings filtered to the user's groups, capped at two entries.
     private var upcomingBookings: [Booking] {
         let myGroupIDs = Set(
             groupStore.myGroups(currentUserID: authManager.currentUserID).map { $0.id }
@@ -44,6 +54,7 @@ struct HomeView: View {
         )
     }
 
+    /// First five rooms shown in the Explore carousel.
     private var featureRooms: [MeetingRoom] {
         Array(viewModel.rooms.prefix(5))
     }

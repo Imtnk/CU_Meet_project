@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Branded launch overlay shown on app start before transitioning to the main tab interface.
 struct SplashView: View {
     var body: some View {
         ZStack {

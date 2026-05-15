@@ -5,7 +5,9 @@
 
 import SwiftUI
 
+/// Tappable card displaying a group's name, member count, and join code.
 struct GroupCard: View {
+    /// The group to render.
     let group: Group
 
     var body: some View {

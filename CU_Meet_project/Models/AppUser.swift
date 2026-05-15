@@ -7,24 +7,30 @@
 
 import Foundation
 
+/// Profile data for an authenticated app user.
 struct AppUser: Identifiable, Codable, Equatable {
+    /// Firebase UID.
     let id: String
     var displayName: String
     var firstName: String?
     var lastName: String?
     var email: String?
-    var photoURL: String?   // Google CDN URL
+    /// Google CDN URL for the user's avatar image.
+    var photoURL: String?
 
-    // Optional profile fields (user-editable)
     var nickname: String?
-    var studentID: String?      // 10-digit string
+    /// 10-digit student identifier.
+    var studentID: String?
     var birthdate: Date?
-    var mostActiveDay: String?  // "Monday"..."Sunday"
+    /// Day of the week the user is most active, e.g. `"Monday"`.
+    var mostActiveDay: String?
     var faculty: String?
-    var year: String?           // "Year 1"..."Year 4", "Graduate"
+    /// Academic year label, e.g. `"Year 1"` through `"Year 4"` or `"Graduate"`.
+    var year: String?
 }
 
 extension AppUser {
+    /// Placeholder returned when a user ID cannot be resolved.
     static let unknownUser = AppUser(
         id: "",
         displayName: "Unknown User",

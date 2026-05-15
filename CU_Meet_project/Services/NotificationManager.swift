@@ -6,7 +6,10 @@
 import UserNotifications
 import UIKit
 
+/// Singleton that manages local notification authorization, scheduling, and
+/// foreground presentation for booking reminders.
 class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
+    /// Shared singleton instance.
     static let shared = NotificationManager()
 
     private override init() {
@@ -14,13 +17,14 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         UNUserNotificationCenter.current().delegate = self
     }
 
+    /// Prompts the user for alert / sound / badge authorization.
     func requestPermission() {
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.alert, .sound, .badge]
         ) { _, _ in }
     }
 
-    // Show notifications even when the app is in the foreground
+    /// Show notifications even when the app is in the foreground.
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
@@ -29,6 +33,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         completionHandler([.banner, .sound])
     }
 
+    /// Schedules a local notification 15 minutes before the booking starts.
     func scheduleReminder(for booking: Booking) {
         let startDate = startDateTime(for: booking)
 
@@ -65,11 +70,13 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         UNUserNotificationCenter.current().add(request)
     }
 
+    /// Removes a previously scheduled reminder for the given booking.
     func cancelReminder(for bookingID: String) {
         UNUserNotificationCenter.current()
             .removePendingNotificationRequests(withIdentifiers: [bookingID])
     }
 
+    /// Parses the start time from a booking's `timeSlot` string and combines it with the booking date.
     private func startDateTime(for booking: Booking) -> Date {
         let parts = booking.timeSlot.components(separatedBy: " - ")
 
@@ -96,6 +103,7 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
     }
 
     #if DEBUG
+    /// Debug helper: fires a test notification after 5 seconds.
     func scheduleTestReminder() {
         let content = UNMutableNotificationContent()
         content.title = "Test Notification"

@@ -7,11 +7,16 @@ import SwiftUI
 import MapKit
 import Combine
 
+/// Owns map camera state and the list of meeting rooms shown on the home screen.
 class HomeViewModel: ObservableObject {
 
+    /// Current visible map region; drives the map camera position.
     @Published var region: MKCoordinateRegion
+
+    /// Meeting rooms fetched from Firestore and displayed as map pins.
     @Published var rooms: [MeetingRoom] = []
 
+    /// Map camera position derived from `region`.
     var position: MapCameraPosition {
         .region(region)
     }
@@ -25,6 +30,7 @@ class HomeViewModel: ObservableObject {
         self.region = defaultRegion
     }
 
+    /// Fetches all meeting rooms from Firestore and publishes the result on the main actor.
     func loadRooms() async {
         do {
             let fetched = try await FirestoreService.shared.fetchRooms()
@@ -63,20 +69,24 @@ class HomeViewModel: ObservableObject {
         return (newRating, newCount)
     }
 
+    /// Halves the map span, zooming the camera in.
     func zoomIn() {
         region.span.latitudeDelta /= 2
         region.span.longitudeDelta /= 2
     }
 
+    /// Doubles the map span, zooming the camera out.
     func zoomOut() {
         region.span.latitudeDelta *= 2
         region.span.longitudeDelta *= 2
     }
 
+    /// Resets the map to the default CU campus region.
     func resetView() {
         region = defaultRegion
     }
 
+    /// Constrains the map center within the CU campus bounding box.
     func clampRegion() {
         let minLat = 13.734, maxLat = 13.739
         let minLon = 100.531, maxLon = 100.536
@@ -84,6 +94,7 @@ class HomeViewModel: ObservableObject {
         region.center.longitude = min(max(region.center.longitude, minLon), maxLon)
     }
 
+    /// Annotation pin diameter scaled inversely with zoom level (30 pt zoomed-in → 18 pt zoomed-out).
     var pinSize: CGFloat {
         let zoom    = region.span.latitudeDelta
         let minZoom: CGFloat = 0.005

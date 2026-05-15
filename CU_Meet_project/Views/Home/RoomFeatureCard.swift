@@ -1,6 +1,8 @@
 import SwiftUI
 
+/// Hero card displaying a room's image overlay with name, capacity badge, and rating pill.
 struct RoomFeatureCard: View {
+    /// The room metadata to render.
     let room: MeetingRoom
 
     var body: some View {

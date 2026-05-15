@@ -6,6 +6,7 @@
 //
 
 
+/// Available amenities that a meeting room may provide.
 enum Facility: String, CaseIterable, Identifiable, Codable {
 
     case projector       = "Projector"
@@ -16,5 +17,6 @@ enum Facility: String, CaseIterable, Identifiable, Codable {
     case powerOutlets    = "Power Outlets"
     case wifi            = "Wi-Fi"
 
+    /// Stable identifier matching the display string raw value.
     var id: String { rawValue }
 }

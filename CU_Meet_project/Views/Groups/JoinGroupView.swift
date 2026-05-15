@@ -6,6 +6,7 @@
 import SwiftUI
 import GoogleSignIn
 
+/// Sheet view for joining a group by entering a 6‑digit join code.
 struct JoinGroupView: View {
 
     @EnvironmentObject var groupStore: GroupStore
@@ -16,6 +17,7 @@ struct JoinGroupView: View {
     @State private var alertMessage = ""
     @State private var alertTitle = ""
 
+    /// Whether the current input is a valid 6‑digit numeric code.
     var isValidCode: Bool {
         let trimmed = code.trimmingCharacters(in: .whitespaces)
         return trimmed.count == 6 && trimmed.allSatisfy { $0.isNumber }

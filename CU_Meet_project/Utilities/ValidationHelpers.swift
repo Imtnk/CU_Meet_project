@@ -6,13 +6,16 @@
 import Foundation
 
 extension String {
+    /// Returns `nil` when the string is empty, otherwise returns the string itself.
     var nonEmpty: String? { isEmpty ? nil : self }
 }
 
+/// Namespace for stateless input validation functions used across the app.
 enum ValidationHelpers {
 
     // MARK: - Group Validation
 
+    /// Validates that `name` is non-empty and at most 100 characters.
     static func validateGroupName(_ name: String) -> (isValid: Bool, error: AppError?) {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
 
@@ -29,6 +32,7 @@ enum ValidationHelpers {
 
     // MARK: - Join Code Validation
 
+    /// Validates that `code` is exactly 6 decimal digits.
     static func validateJoinCode(_ code: String) -> (isValid: Bool, error: AppError?) {
         let trimmed = code.trimmingCharacters(in: .whitespaces)
 
@@ -45,6 +49,7 @@ enum ValidationHelpers {
 
     // MARK: - Booking Validation
 
+    /// Validates that `notes` does not exceed 200 characters after trimming whitespace.
     static func validateBookingNotes(_ notes: String) -> (isValid: Bool, error: String?) {
         let trimmed = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.count > 200 {
@@ -53,6 +58,7 @@ enum ValidationHelpers {
         return (true, nil)
     }
 
+    /// Validates that the start time of `timeSlot` on `date` is in the future.
     static func validateBookingDateTime(date: Date, timeSlot: String) -> (isValid: Bool, error: AppError?) {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"

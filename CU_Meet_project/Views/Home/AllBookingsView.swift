@@ -5,18 +5,25 @@
 
 import SwiftUI
 
+/// Scrollable list of all upcoming bookings, filterable by group.
 struct AllBookingsView: View {
 
+    /// Source of upcoming booking data.
     @EnvironmentObject var bookingStore: BookingStore
+    /// Provides group name lookup and membership.
     @EnvironmentObject var groupStore: GroupStore
+    /// Identifies the current user for group scoping.
     @EnvironmentObject var authManager: AuthManager
 
+    /// Group ID selected in the filter bar; nil shows all groups.
     @State private var selectedGroupID: String? = nil
 
+    /// Groups the current user belongs to.
     private var myGroups: [Group] {
         groupStore.myGroups(currentUserID: authManager.currentUserID)
     }
 
+    /// Upcoming bookings scoped to the user's groups, narrowed by `selectedGroupID` when set.
     private var filteredBookings: [Booking] {
         let myGroupIDs = Set(myGroups.map { $0.id })
         let base = bookingStore.upcomingBookings()
@@ -87,9 +94,13 @@ struct AllBookingsView: View {
     }
 }
 
+/// Pill-shaped toggle button used in the group filter bar.
 private struct FilterChip: View {
+    /// Text shown inside the chip.
     let label: String
+    /// When true, renders with the brand-pink fill.
     let isSelected: Bool
+    /// Called when the chip is tapped.
     let action: () -> Void
 
     var body: some View {

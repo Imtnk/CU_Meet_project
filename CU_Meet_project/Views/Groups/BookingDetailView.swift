@@ -5,8 +5,11 @@
 
 import SwiftUI
 
+/// Full‑screen detail view for a single booking: hero image, room info,
+/// group member list, notes, and cancel action.
 struct BookingDetailView: View {
 
+    /// The booking to display.
     let booking: Booking
 
     @EnvironmentObject var groupStore: GroupStore
@@ -169,6 +172,7 @@ struct BookingDetailView: View {
         }
     }
 
+    /// Reusable card wrapper with white background, rounded corners, and subtle shadow.
     @ViewBuilder
     private func sectionCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()
@@ -180,12 +184,14 @@ struct BookingDetailView: View {
             .padding(.horizontal, 16)
     }
 
+    /// Formats a date using `.medium` style.
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: date)
     }
 
+    /// The group associated with this booking, if available in the store.
     private var currentGroup: Group? {
         groupStore.groups.first { $0.id == booking.groupID }
     }

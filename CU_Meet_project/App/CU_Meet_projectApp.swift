@@ -3,6 +3,8 @@ import FirebaseCore
 import GoogleSignIn
 import UserNotifications
 
+/// Root application entry point. Configures Firebase, Google Sign‑In, and
+/// injects all top‑level stores into the view hierarchy.
 @main
 struct CU_Meet_projectApp: App {
 
@@ -10,6 +12,7 @@ struct CU_Meet_projectApp: App {
     @StateObject private var groupStore   = GroupStore()
     @StateObject private var userStore: UserStore
     @StateObject private var authManager: AuthManager
+    /// Whether the branded splash overlay is still visible.
     @State private var showSplash = true
 
     init() {

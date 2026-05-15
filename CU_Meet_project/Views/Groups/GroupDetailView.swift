@@ -5,20 +5,29 @@
 
 import SwiftUI
 
+/// Detail view for a single group showing members, join code, and leave action.
 struct GroupDetailView: View {
+    /// Group snapshot passed in at navigation time.
     let group: Group
     @EnvironmentObject var groupStore: GroupStore
     @EnvironmentObject var authManager: AuthManager
     @EnvironmentObject var userStore: UserStore
     @Environment(\.dismiss) var dismiss
 
+    /// Controls presentation of the leave-group confirmation alert.
     @State private var showLeaveAlert = false
+    /// True while the leave-group network call is in flight.
     @State private var isLeaving = false
+    /// Non-nil when the leave-group call fails.
     @State private var errorMessage: String?
+    /// True briefly after the join code is copied to the clipboard.
     @State private var codeCopied = false
+    /// Member tapped to view their detail sheet.
     @State private var selectedMember: AppUser?
+    /// Controls presentation of the MemberDetailView sheet.
     @State private var showMemberDetail = false
 
+    /// Live version of the group from the store, falling back to the passed-in snapshot.
     private var currentGroup: Group? {
         groupStore.groups.first(where: { $0.id == group.id })
     }
@@ -174,6 +183,7 @@ struct GroupDetailView: View {
         }
     }
 
+    /// Wraps content in a white rounded card with a soft drop shadow.
     @ViewBuilder
     private func sectionCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()

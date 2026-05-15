@@ -8,17 +8,23 @@
 
 import SwiftUI
 
+/// Review‑and‑confirm sheet that submits a new booking to Firestore and
+/// schedules a local reminder.
 struct BookingConfirmationView: View {
-    
+    /// The room being booked.
     let room: MeetingRoom
+    /// Calendar date chosen by the user.
     let selectedDate: Date
+    /// Time slot string (e.g. "09:00 - 11:00").
     let selectedTime: String
+    /// ID of the group making the booking.
     let groupID: String
     
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var groupStore: GroupStore
     
     @Environment(\.dismiss) var dismiss
+    /// Closure invoked after the booking is successfully persisted.
     let onComplete: () -> Void
     @State private var errorMessage: String?
     @State private var isSubmitting = false
@@ -165,6 +171,7 @@ struct BookingConfirmationView: View {
         }
     }
 
+    /// Formats a date using `.medium` style.
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
