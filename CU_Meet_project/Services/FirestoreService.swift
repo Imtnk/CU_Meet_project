@@ -114,6 +114,13 @@ final class FirestoreService {
             .updateData(["memberIDs": memberIDs])
     }
 
+    /// Updates the `name` field of an existing group document.
+    func updateGroupName(id: String, name: String) async throws {
+        try await db.collection(C.groups)
+            .document(id)
+            .updateData(["name": name])
+    }
+
     /// Deletes the group and all its associated bookings atomically via a batched write.
     func deleteGroup(id: String) async throws {
         let bookingDocs = try await db.collection(C.bookings)

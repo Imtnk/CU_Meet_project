@@ -10,11 +10,13 @@ import FirebaseFirestore
 /// A named collection of users who can share room bookings.
 struct Group: Identifiable, Codable, Equatable {
     let id: String
-    let name: String
+    var name: String
     /// Short code members share to invite others.
     let joinCode: String
     /// Firebase UIDs of every member.
     var memberIDs: [String]
+    /// The Firebase UID of the user who created the group; `nil` for legacy groups.
+    let creatorID: String?
 
     var memberCount: Int { memberIDs.count }
 }
@@ -72,7 +74,8 @@ class GroupStore: ObservableObject {
             id: UUID().uuidString,
             name: trimmedName,
             joinCode: code,
-            memberIDs: [creatorID]
+            memberIDs: [creatorID],
+            creatorID: creatorID
         )
         try await FirestoreService.shared.createGroup(group)
         return group
@@ -87,7 +90,7 @@ class GroupStore: ObservableObject {
         }
         let updatedIDs = group.memberIDs + [userID]
         try await FirestoreService.shared.updateGroupMembers(groupID: group.id, memberIDs: updatedIDs)
-        return .success(Group(id: group.id, name: group.name, joinCode: group.joinCode, memberIDs: updatedIDs))
+        return .success(Group(id: group.id, name: group.name, joinCode: group.joinCode, memberIDs: updatedIDs, creatorID: group.creatorID))
     }
 
     func leaveGroup(groupID: String, userID: String) async throws {
@@ -98,6 +101,17 @@ class GroupStore: ObservableObject {
         } else {
             try await FirestoreService.shared.updateGroupMembers(groupID: groupID, memberIDs: remaining)
         }
+    }
+
+    func updateGroupName(id: String, name: String) async throws {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { throw AppError.invalidGroupName(reason: "cannot be empty") }
+        guard trimmed.count <= 100 else { throw AppError.invalidGroupName(reason: "must be 100 characters or less") }
+        try await FirestoreService.shared.updateGroupName(id: id, name: trimmed)
+    }
+
+    func deleteGroup(id: String) async throws {
+        try await FirestoreService.shared.deleteGroup(id: id)
     }
 
     func groupName(for id: String) -> String {

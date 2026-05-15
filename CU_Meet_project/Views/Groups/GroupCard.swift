@@ -41,7 +41,7 @@ struct GroupCard: View {
 #Preview {
     GroupCard(group: Group(
         id: "1", name: "Study Group A",
-        joinCode: "ABC123", memberIDs: ["u1", "u2", "u3"]
+        joinCode: "ABC123", memberIDs: ["u1", "u2", "u3"], creatorID: nil
     ))
     .padding()
 }

@@ -21,6 +21,7 @@ Services handle all external API calls and data persistence. They're singletons 
   - `listenToUsers(userIDs:completion:)` — Batch fetch user profiles
   - `updateBookingStatus(id:status:)` — Cancel a booking
   - `updateBookingNotes(id:notes:)` — Edit the notes/agenda field in-place
+  - `updateGroupName(id:name:)` — Rename a group document
   - Group CRUD operations (create, join, update)
 - **Why it matters:** All Firestore reads/writes go through one place, making it easy to debug data flow
 - **Note on notes:** The `Booking` struct is `Codable`, so adding `notes: String?` field required zero changes to FirestoreService — persistence happens automatically
@@ -61,6 +62,8 @@ Services handle all external API calls and data persistence. They're singletons 
   - `createGroup(name:creatorID:)` — Validate name, generate unique 6-digit code, persist to Firestore
   - `joinGroup(code:userID:)` — Look up group by join code, append user to member list
   - `leaveGroup(groupID:userID:)` — Remove user from members; delete group if last member
+  - `updateGroupName(id:name:)` — Rename the group (validated); only the creator can edit
+  - `deleteGroup(id:)` — Permanently delete the group and all its bookings; only the creator can do this
   - `myGroups(currentUserID:)` — Filter groups the current user belongs to
   - `groupName(for:)` — Convenience lookup for display
 - **Why it matters:** Provides reactive group data so member lists, names, and join codes stay in sync
@@ -108,7 +111,8 @@ struct Booking {
 
 #### **Group** (`Models/Group.swift`)
 - Represents a team/project group that shares bookings
-- Members tracked by ID; join via 6-digit code
+- Members tracked by ID; join via 6-digit code; `creatorID` tracks who created the group
+- Name is editable inline by the creator in `GroupDetailView`
 - Firestore listener keeps all groups in sync
 
 #### **AppUser** (`Models/AppUser.swift`)
@@ -191,7 +195,7 @@ Views are composed hierarchically, with environment objects injected at the top 
 
 #### **Groups Tab** (`Views/Groups/*.swift`)
 - **GroupsView:** List of user's groups with pull-to-refresh
-- **GroupDetailView:** Group name, member rows (`MemberRowView` with "You" badge), join code badge, leave group action, upcoming bookings for the group via sheet
+- **GroupDetailView:** Group name (editable inline by creator via TextField + Save/Cancel), member rows (`MemberRowView` with "You" badge), join code badge (tap to copy), upcoming bookings for the group (tappable rows navigate to `BookingDetailView`), leave group action, delete group action (creator only, with confirmation alert)
 - **CreateGroupView:** Form with group name field (validated), auto-generated join code, create action
 - **JoinGroupView:** 6-digit code entry with length counter, validation feedback, join button. Success shows a toast; errors show an alert
 - **GroupCard:** Reusable card showing group name, member count, and join code

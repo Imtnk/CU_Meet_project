@@ -28,12 +28,15 @@ struct JoinGroupView: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
 
             Text("Join Group")
-                .font(.title)
+                .font(.title2).fontWeight(.bold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+                .padding(.top, 24)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 TextField("Enter 6-digit code", text: $code)
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
@@ -44,7 +47,7 @@ struct JoinGroupView: View {
                 HStack {
                     Text("\(code.count)/6")
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.mutedGray)
 
                     if !isValidCode && !code.isEmpty {
                         Text("Code must be 6 digits")
@@ -54,7 +57,10 @@ struct JoinGroupView: View {
                     Spacer()
                 }
             }
-            .padding()
+            .padding(14)
+//            .background(Color.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+            .padding(.horizontal, 20)
 
             Button(action: {
                 isJoining = true
@@ -87,17 +93,20 @@ struct JoinGroupView: View {
                 }
             }) {
                 Text(isJoining ? "Joining…" : "Join")
+                    .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.green)
+                    .padding(.vertical, 11)
+                    .background(isJoining || !isValidCode ? Color.brandPink.opacity(0.4) : Color.brandPink)
                     .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
             }
             .disabled(!isValidCode || isJoining)
+            .padding(.horizontal, 20)
 
             Spacer()
         }
-        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.warmGray.ignoresSafeArea())
         .toast(isPresented: $showSuccessToast, message: successMessage)
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
