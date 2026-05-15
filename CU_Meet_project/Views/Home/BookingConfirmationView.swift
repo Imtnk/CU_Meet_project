@@ -39,13 +39,14 @@ struct BookingConfirmationView: View {
                 .resizable()
                 .scaledToFill()
                 .frame(height: 180)
-                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+                .padding(.horizontal)
             
             VStack(alignment: .leading, spacing: 12) {
                 
                 Text("Room")
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.mutedGray)
                 
                 Text(room.name)
                     .font(.headline)
@@ -54,7 +55,7 @@ struct BookingConfirmationView: View {
                 
                 Text("Group")
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.mutedGray)
                 
                 Text(groupStore.groupName(for: groupID))
                     .font(.headline)
@@ -63,7 +64,7 @@ struct BookingConfirmationView: View {
                 
                 Text("Date & Time")
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.mutedGray)
                 
                 Text("\(formattedDate(selectedDate)) • \(selectedTime)")
                     .font(.headline)
@@ -80,8 +81,8 @@ struct BookingConfirmationView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.gray.opacity(0.2))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .background(Color.mutedGray.opacity(0.15))
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
                 .disabled(isSubmitting)
 
                 Button(action: {
@@ -118,9 +119,9 @@ struct BookingConfirmationView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(isSubmitting ? Color.blue.opacity(0.6) : Color.blue)
+                .background(isSubmitting ? Color.brandPink.opacity(0.6) : Color.brandPink)
                 .foregroundColor(.white)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
                 .disabled(isSubmitting)
             }
         }

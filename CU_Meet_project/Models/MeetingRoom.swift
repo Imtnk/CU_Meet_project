@@ -18,7 +18,14 @@ struct MeetingRoom: Identifiable, Codable, Equatable {
     let capacity: Int
     let imageAssetName: String
 
+    var userRatings: [String: Int]?
+    var userRatingTotal: Int?
+    var userRatingCount: Int?
+
     var coordinate: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        CLLocationCoordinate2D(
+            latitude: latitude,
+            longitude: longitude
+        )
     }
 }

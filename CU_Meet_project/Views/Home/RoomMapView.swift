@@ -1,8 +1,6 @@
 //
-//  RoomMap.swift
+//  RoomMapView.swift
 //  CU_Meet_project
-//
-//  Created by Imtnk on 3/4/2569 BE.
 //
 
 import SwiftUI
@@ -35,155 +33,173 @@ struct RoomMapView: View {
     private func addToRecent(_ room: MeetingRoom) {
         recentRooms.removeAll { $0.id == room.id }
         recentRooms.insert(room, at: 0)
-        if recentRooms.count > 3 {
-            recentRooms = Array(recentRooms.prefix(3))
-        }
+        if recentRooms.count > 3 { recentRooms = Array(recentRooms.prefix(3)) }
+    }
+
+    private var hasActiveFilter: Bool {
+        !selectedFacilities.isEmpty || minCapacity > 1
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        ScrollView {
+            VStack(spacing: 16) {
 
-            // Search bar + filter button
-            HStack(spacing: 8) {
-                HStack {
-                    Image(systemName: "magnifyingglass").foregroundColor(.gray)
-                    TextField("Search rooms…", text: $searchText)
-                        .autocorrectionDisabled()
+                // Search bar + filter button
+                HStack(spacing: 10) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass").foregroundColor(.mutedGray)
+                        TextField("Search rooms…", text: $searchText)
+                            .autocorrectionDisabled()
+                    }
+                    .padding(12)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
+                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+
+                    Button { showFilters = true } label: {
+                        Image(systemName: hasActiveFilter
+                              ? "line.3.horizontal.decrease.circle.fill"
+                              : "line.3.horizontal.decrease.circle")
+                            .font(.title2)
+                            .foregroundColor(hasActiveFilter ? .brandPink : .mutedGray)
+                    }
                 }
-                .padding(10)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
 
-                Button {
-                    showFilters = true
-                } label: {
-                    Image(systemName: selectedFacilities.isEmpty && minCapacity == 1
-                          ? "line.3.horizontal.decrease.circle"
-                          : "line.3.horizontal.decrease.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(selectedFacilities.isEmpty && minCapacity == 1 ? .primary : .blue)
-                }
-            }
-            .padding(.horizontal)
-            .padding(.top, 10)
-            .padding(.bottom, 8)
-
-            // Map
-            Map(
-                position: Binding(
-                    get: { viewModel.position },
-                    set: { _ in }
-                )
-            ) {
-                ForEach(filteredRooms) { room in
-                    Annotation(room.name, coordinate: room.coordinate) {
-                        NavigationLink(destination: RoomDetailView(room: room)) {
-                            Image(systemName: "mappin.circle.fill")
-                                .resizable()
-                                .frame(width: viewModel.pinSize, height: viewModel.pinSize)
-                                .foregroundColor(.red)
+                // Map
+                Map(
+                    position: Binding(
+                        get: { viewModel.position },
+                        set: { _ in }
+                    )
+                ) {
+                    ForEach(filteredRooms) { room in
+                        Annotation(room.name, coordinate: room.coordinate) {
+                            NavigationLink(destination: RoomDetailView(room: room)) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.brandPink)
+                                        .frame(width: viewModel.pinSize, height: viewModel.pinSize)
+                                        .shadow(color: .brandPink.opacity(0.4), radius: 4)
+                                    Image(systemName: "mappin.fill")
+                                        .font(.system(size: viewModel.pinSize * 0.45))
+                                        .foregroundColor(.white)
+                                }
                                 .animation(.easeInOut(duration: 0.2), value: viewModel.pinSize)
-                                .shadow(radius: 3)
+                            }
+                            .simultaneousGesture(TapGesture().onEnded { addToRecent(room) })
                         }
-                        .simultaneousGesture(TapGesture().onEnded {
-                            addToRecent(room)
-                        })
                     }
                 }
-            }
-            .mapStyle(.standard(elevation: .flat))
-            .onMapCameraChange { context in
-                viewModel.region = context.region
-                viewModel.clampRegion()
-            }
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    viewModel.resetView()
+                .mapStyle(.standard(elevation: .flat))
+                .onMapCameraChange { context in
+                    viewModel.region = context.region
+                    viewModel.clampRegion()
                 }
-            }
-            .task { await viewModel.loadRooms() }
-            .frame(height: 280)
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(radius: 5)
-            .padding(.horizontal)
-            .padding(.top, 5)
-
-            // Map controls
-            HStack(spacing: 10) {
-                Spacer()
-                HStack(spacing: 20) {
-                    Button(action: { viewModel.zoomIn() }) {
-                        Image(systemName: "plus.magnifyingglass")
-                    }
-                    Button(action: { viewModel.zoomOut() }) {
-                        Image(systemName: "minus.magnifyingglass")
-                    }
-                    Button(action: { viewModel.resetView() }) {
-                        Image(systemName: "arrow.clockwise")
-                    }
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { viewModel.resetView() }
                 }
-                .padding(.top, 10)
-            }
-            .padding()
+                .task { await viewModel.loadRooms() }
+                .frame(height: 280)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+                .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 4)
+                .padding(.horizontal, 16)
+                .overlay(alignment: .bottomTrailing) {
+                    mapControls.padding(.trailing, 28).padding(.bottom, 16)
+                }
 
-            // Room list — filtered results when searching, recent otherwise
-            VStack(alignment: .leading, spacing: 12) {
+                // Room list
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(isFiltering ? "Results (\(filteredRooms.count))" : "Recent")
+                        .font(.headline).fontWeight(.bold).foregroundColor(.charcoal)
+                        .padding(.horizontal, 16)
 
-                Text(isFiltering ? "Results (\(filteredRooms.count))" : "Recent")
-                    .font(.headline)
-                    .padding(.horizontal)
+                    let displayRooms = isFiltering ? filteredRooms : recentRooms
 
-                let displayRooms = isFiltering ? filteredRooms : recentRooms
-
-                VStack(spacing: 8) {
                     if displayRooms.isEmpty {
                         Text(isFiltering ? "No rooms match your search" : "No recent rooms")
-                            .foregroundColor(.gray)
+                            .font(.subheadline).foregroundColor(.mutedGray)
                             .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.vertical, 20)
+                            .padding(.vertical, 24)
                     } else {
                         ForEach(displayRooms) { room in
                             NavigationLink(destination: RoomDetailView(room: room)) {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(room.name)
-                                            .foregroundColor(.primary)
-                                        Text("Capacity: \(room.capacity)")
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(.gray)
-                                }
-                                .padding()
-                                .background(Color(.systemBackground))
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .shadow(radius: 2)
+                                roomRow(room)
                             }
-                            .simultaneousGesture(TapGesture().onEnded {
-                                addToRecent(room)
-                            })
+                            .buttonStyle(.plain)
+                            .simultaneousGesture(TapGesture().onEnded { addToRecent(room) })
+                            .padding(.horizontal, 16)
                         }
                     }
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            .padding(.bottom, 10)
 
-            Spacer()
+                Spacer(minLength: 20)
+            }
         }
-        .navigationTitle("Select Room")
+        .background(Color.warmGray.ignoresSafeArea())
+        .navigationTitle("Find a Room")
+        .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showFilters) {
             FilterSheet(selectedFacilities: $selectedFacilities, minCapacity: $minCapacity)
                 .presentationDetents([.medium])
         }
     }
+
+    // MARK: - Room row card
+    @ViewBuilder
+    private func roomRow(_ room: MeetingRoom) -> some View {
+        HStack(spacing: 12) {
+            Rectangle()
+                .fill(Color.brandPinkDark)
+                .overlay(Image(room.imageAssetName).resizable().scaledToFill())
+                .frame(width: 64, height: 64)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(room.name)
+                    .font(.subheadline).fontWeight(.semibold).foregroundColor(.charcoal)
+                Text("Up to \(room.capacity) people")
+                    .font(.caption).foregroundColor(.mutedGray)
+                HStack(spacing: 4) {
+                    Image(systemName: "star.fill").font(.caption2).foregroundColor(.brandPink)
+                    Text(String(format: "%.1f", room.rating))
+                        .font(.caption).fontWeight(.medium).foregroundColor(.charcoal)
+                }
+            }
+
+            Spacer()
+            Image(systemName: "chevron.right").font(.caption).foregroundColor(.mutedGray)
+        }
+        .padding(14)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+        .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
+    }
+
+    // MARK: - Map controls
+    private var mapControls: some View {
+        VStack(spacing: 8) {
+            ForEach([
+                ("plus.magnifyingglass", { viewModel.zoomIn() }),
+                ("minus.magnifyingglass", { viewModel.zoomOut() }),
+                ("arrow.clockwise", { viewModel.resetView() })
+            ] as [(String, () -> Void)], id: \.0) { icon, action in
+                Button(action: action) {
+                    Image(systemName: icon)
+                        .font(.subheadline).fontWeight(.semibold)
+                        .foregroundColor(.brandPink)
+                        .frame(width: 36, height: 36)
+                        .background(Color.white)
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.1), radius: 4)
+                }
+            }
+        }
+    }
 }
 
+// MARK: - Filter Sheet
 struct FilterSheet: View {
     @Binding var selectedFacilities: Set<Facility>
     @Binding var minCapacity: Int
@@ -201,9 +217,9 @@ struct FilterSheet: View {
                                 else { selectedFacilities.remove(facility) }
                             }
                         ))
+                        .tint(.brandPink)
                     }
                 }
-
                 Section("Minimum Capacity") {
                     Picker("Minimum capacity", selection: $minCapacity) {
                         Text("Any").tag(1)
@@ -214,7 +230,6 @@ struct FilterSheet: View {
                     }
                     .pickerStyle(.menu)
                 }
-
                 Section {
                     Button("Clear Filters", role: .destructive) {
                         selectedFacilities = []
@@ -227,6 +242,7 @@ struct FilterSheet: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
+                        .foregroundColor(.brandPink)
                 }
             }
         }
@@ -234,7 +250,5 @@ struct FilterSheet: View {
 }
 
 #Preview {
-    NavigationStack {
-        RoomMapView()
-    }
+    NavigationStack { RoomMapView() }
 }

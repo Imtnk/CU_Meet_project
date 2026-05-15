@@ -139,6 +139,96 @@ final class FirestoreService {
             .updateData(["status": status.rawValue])
     }
 
+    /// Atomically appends a user rating using a weighted-average transaction.
+    func rateRoom(
+        roomID: String,
+        userID: String,
+        stars: Int
+    ) async throws {
+
+        let ref = db.collection(C.rooms).document(roomID)
+
+        let _ = try await db.runTransaction { transaction, errorPointer in
+
+            let snapshot: DocumentSnapshot
+
+            do {
+                snapshot = try transaction.getDocument(ref)
+            } catch let err as NSError {
+                errorPointer?.pointee = err
+                return nil
+            }
+
+            let currentRating =
+                snapshot.data()?["rating"] as? Double ?? 0
+
+            let currentReviewCount =
+                snapshot.data()?["reviewCount"] as? Int ?? 0
+
+            let currentUserRatingTotal =
+                snapshot.data()?["userRatingTotal"] as? Int ?? 0
+
+            let currentUserRatingCount =
+                snapshot.data()?["userRatingCount"] as? Int ?? 0
+
+            let rawRatings =
+                snapshot.data()?["userRatings"] as? [String: Any] ?? [:]
+
+            var userRatings: [String: Int] = [:]
+
+            for (key, value) in rawRatings {
+                if let intValue = value as? Int {
+                    userRatings[key] = intValue
+                }
+            }
+
+            let oldRating = userRatings[userID]
+
+            // Remove old rating contribution
+            var updatedUserRatingTotal = currentUserRatingTotal
+            var updatedUserRatingCount = currentUserRatingCount
+
+            if let oldRating {
+                updatedUserRatingTotal -= oldRating
+            } else {
+                updatedUserRatingCount += 1
+            }
+
+            // Add new rating
+            updatedUserRatingTotal += stars
+
+            userRatings[userID] = stars
+
+            // Recover original mocked values
+            let baseReviewCount =
+                currentReviewCount - currentUserRatingCount
+
+            let baseRatingTotal =
+                (currentRating * Double(currentReviewCount))
+                - Double(currentUserRatingTotal)
+
+            // Recalculate final combined values
+            let finalReviewCount =
+                baseReviewCount + updatedUserRatingCount
+
+            let finalRatingTotal =
+                baseRatingTotal + Double(updatedUserRatingTotal)
+
+            let finalRating =
+                finalRatingTotal / Double(max(finalReviewCount, 1))
+
+            transaction.updateData([
+                "userRatings": userRatings,
+                "userRatingTotal": updatedUserRatingTotal,
+                "userRatingCount": updatedUserRatingCount,
+                "rating": finalRating,
+                "reviewCount": finalReviewCount
+            ], forDocument: ref)
+
+            return nil
+        }
+    }
+
     // MARK: - Mock Data (DEBUG only)
 
     func seedMockData(currentUserID: String) async throws {

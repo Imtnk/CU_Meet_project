@@ -38,6 +38,35 @@ class HomeViewModel: ObservableObject {
         }
     }
 
+    /// Submits a star rating and returns the updated (rating, reviewCount).
+    func rateRoom(
+        roomID: String,
+        userID: String,
+        stars: Int
+    ) async throws -> (Double, Int) {
+        try await FirestoreService.shared.rateRoom(
+            roomID: roomID,
+            userID: userID,
+            stars: stars
+        )
+        // Re-fetch just this room to get the server-computed values
+        let refreshed = try await FirestoreService.shared.fetchRooms()
+        if let updated = refreshed.first(where: { $0.id == roomID }) {
+            await MainActor.run {
+                if let idx = self.rooms.firstIndex(where: { $0.id == roomID }) {
+                    self.rooms[idx] = updated
+                }
+            }
+            return (updated.rating, updated.reviewCount)
+        }
+        // Fallback: optimistic estimate if re-fetch fails
+        let room = rooms.first(where: { $0.id == roomID })
+        let cur = room?.rating ?? 0; let cnt = room?.reviewCount ?? 0
+        let newCount = cnt + 1
+        let newRating = ((cur * Double(cnt)) + Double(stars)) / Double(newCount)
+        return (newRating, newCount)
+    }
+
     func zoomIn() {
         region.span.latitudeDelta /= 2
         region.span.longitudeDelta /= 2
@@ -85,7 +114,7 @@ class HomeViewModel: ObservableObject {
             latitude: 13.7370, longitude: 100.5340,
             rating: 4.5, reviewCount: 21,
             facilities: [.wifi, .powerOutlets],
-            capacity: 6, imageAssetName: "meeting_room1"
+            capacity: 6, imageAssetName: "meeting_room2"
         ),
         MeetingRoom(
             id: "room_business",
@@ -93,7 +122,7 @@ class HomeViewModel: ObservableObject {
             latitude: 13.7358, longitude: 100.5338,
             rating: 4.6, reviewCount: 18,
             facilities: [.tv, .videoConference, .wifi, .aircon],
-            capacity: 8, imageAssetName: "meeting_room1"
+            capacity: 8, imageAssetName: "meeting_room3"
         ),
         MeetingRoom(
             id: "room_lecture",
@@ -101,7 +130,7 @@ class HomeViewModel: ObservableObject {
             latitude: 13.7372, longitude: 100.5285,
             rating: 4.8, reviewCount: 45,
             facilities: [.projector, .aircon, .powerOutlets],
-            capacity: 50, imageAssetName: "meeting_room1"
+            capacity: 50, imageAssetName: "meeting_room4"
         ),
         MeetingRoom(
             id: "room_medical",
@@ -109,7 +138,7 @@ class HomeViewModel: ObservableObject {
             latitude: 13.7340, longitude: 100.5355,
             rating: 4.9, reviewCount: 27,
             facilities: [.projector, .videoConference, .wifi, .aircon, .powerOutlets],
-            capacity: 12, imageAssetName: "meeting_room1"
+            capacity: 12, imageAssetName: "meeting_room5"
         ),
     ]
 }

@@ -102,13 +102,19 @@ struct HomeView: View {
                                 }
                             }
                             .tabViewStyle(.page(indexDisplayMode: .always))
-                            .frame(height: UIScreen.main.bounds.height * 0.28)
+                            .frame(height: 240)
                             .task {
                                 while !Task.isCancelled {
-                                    try? await Task.sleep(for: .seconds(3))
+                                    try? await Task.sleep(for: .seconds(5))
                                     guard !featureRooms.isEmpty else { continue }
-                                    withAnimation(.easeInOut) {
-                                        featureIndex = (featureIndex + 1) % featureRooms.count
+                                    let isLastCard = featureIndex == featureRooms.count - 1
+                                    if isLastCard {
+                                        // Reset without animation to avoid jump effect
+                                        featureIndex = 0
+                                    } else {
+                                        withAnimation(.easeInOut(duration: 1)) {
+                                            featureIndex += 1
+                                        }
                                     }
                                 }
                             }
