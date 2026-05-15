@@ -5,6 +5,7 @@
 
 import SwiftUI
 import Foundation
+import GoogleSignIn
 
 struct MemberDetailView: View {
     let memberID: String
@@ -19,14 +20,24 @@ struct MemberDetailView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // Avatar + name section
                     VStack(spacing: 12) {
-                        Circle()
-                            .fill(Color.brandPinkLight)
-                            .frame(width: 80, height: 80)
-                            .overlay(
-                                Image(systemName: "person.fill")
-                                    .font(.system(size: 32))
-                                    .foregroundColor(.brandPink)
-                            )
+                        AsyncImage(url: displayMember.photoURL.flatMap { URL(string: $0) }) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable()
+                            case .empty, .failure:
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(.mutedGray)
+                            @unknown default:
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .foregroundColor(.mutedGray)
+                            }
+                        }
+                        .frame(width: 100, height: 100)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.brandPink, lineWidth: 3))
+                        .shadow(color: .brandPink.opacity(0.3), radius: 8)
 
                         VStack(spacing: 4) {
                             Text(displayMember.displayName)
