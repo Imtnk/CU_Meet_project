@@ -71,6 +71,7 @@ class BookingStore: ObservableObject {
         try await FirestoreService.shared.updateBookingStatus(id: booking.id, status: .cancelled)
     }
 
+    /// Persists an edited notes/agenda value for the given booking.
     func updateNotes(bookingID: String, notes: String?) async throws {
         try await FirestoreService.shared.updateBookingNotes(id: bookingID, notes: notes)
     }

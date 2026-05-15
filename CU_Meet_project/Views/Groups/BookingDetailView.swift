@@ -21,8 +21,11 @@ struct BookingDetailView: View {
     @State private var errorMessage: String?
     @State private var selectedMember: AppUser?
     @State private var showMemberDetail = false
+    /// Whether the notes inline editor is active.
     @State private var isEditingNotes = false
+    /// Temporary buffer for the notes text while editing.
     @State private var editedNotes: String = ""
+    /// Validation error from the notes text field.
     @State private var notesError: String?
 
     var body: some View {
@@ -252,6 +255,7 @@ struct BookingDetailView: View {
         groupStore.groups.first { $0.id == booking.groupID }
     }
 
+    /// Persists the edited notes to Firestore and exits edit mode.
     private func saveNotes() {
         let trimmed = editedNotes.trimmingCharacters(in: .whitespacesAndNewlines)
         let notesToSave = trimmed.isEmpty ? nil : trimmed
