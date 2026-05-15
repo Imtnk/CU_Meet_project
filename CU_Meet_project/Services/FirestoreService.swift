@@ -157,6 +157,13 @@ final class FirestoreService {
             .updateData(["status": status.rawValue])
     }
 
+    /// Updates the `notes` field of an existing booking document.
+    func updateBookingNotes(id: String, notes: String?) async throws {
+        try await db.collection(C.bookings)
+            .document(id)
+            .updateData(["notes": notes as Any])
+    }
+
     /// Atomically appends a user rating using a weighted-average transaction.
     func rateRoom(
         roomID: String,

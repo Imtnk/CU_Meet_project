@@ -21,6 +21,9 @@ struct BookingDetailView: View {
     @State private var errorMessage: String?
     @State private var selectedMember: AppUser?
     @State private var showMemberDetail = false
+    @State private var isEditingNotes = false
+    @State private var editedNotes: String = ""
+    @State private var notesError: String?
 
     var body: some View {
         ScrollView {
@@ -101,14 +104,67 @@ struct BookingDetailView: View {
                         }
                     }
 
-                    // Notes section (shown only when notes were recorded)
-                    if let notes = booking.notes {
-                        sectionCard {
-                            VStack(alignment: .leading, spacing: 8) {
+                    // Notes section
+                    sectionCard {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
                                 Text("Notes")
                                     .font(.headline).foregroundColor(.charcoal)
+                                Spacer()
+                                if bookingStore.isUpcoming(booking) && !isEditingNotes {
+                                    Button("Edit") {
+                                        editedNotes = booking.notes ?? ""
+                                        isEditingNotes = true
+                                    }
+                                    .font(.caption).fontWeight(.semibold)
+                                    .foregroundColor(.brandPink)
+                                }
+                            }
+
+                            if isEditingNotes {
+                                TextField("Agenda / notes", text: $editedNotes, axis: .vertical)
+                                    .lineLimit(3...6)
+                                    .padding(10)
+                                    .background(Color.mutedGray.opacity(0.08))
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .onChange(of: editedNotes) { _, val in
+                                        let result = ValidationHelpers.validateBookingNotes(val)
+                                        notesError = result.isValid ? nil : result.error
+                                    }
+
+                                HStack {
+                                    if let err = notesError {
+                                        Text(err)
+                                            .font(.caption).foregroundColor(.red)
+                                    }
+                                    Spacer()
+                                    Text("\(editedNotes.trimmingCharacters(in: .whitespacesAndNewlines).count)/200")
+                                        .font(.caption)
+                                        .foregroundColor(notesError != nil ? .red : .mutedGray)
+                                }
+
+                                HStack(spacing: 12) {
+                                    Button("Cancel") {
+                                        isEditingNotes = false
+                                        editedNotes = ""
+                                        notesError = nil
+                                    }
+                                    .font(.subheadline).foregroundColor(.mutedGray)
+
+                                    Button("Save") {
+                                        saveNotes()
+                                    }
+                                    .font(.subheadline).fontWeight(.semibold)
+                                    .foregroundColor(.brandPink)
+                                    .disabled(notesError != nil)
+                                }
+                            } else if let notes = booking.notes {
                                 Text(notes)
                                     .font(.subheadline).foregroundColor(.mutedGray)
+                            } else {
+                                Text("No notes")
+                                    .font(.subheadline).foregroundColor(.mutedGray.opacity(0.6))
+                                    .italic()
                             }
                         }
                     }
@@ -194,5 +250,23 @@ struct BookingDetailView: View {
     /// The group associated with this booking, if available in the store.
     private var currentGroup: Group? {
         groupStore.groups.first { $0.id == booking.groupID }
+    }
+
+    private func saveNotes() {
+        let trimmed = editedNotes.trimmingCharacters(in: .whitespacesAndNewlines)
+        let notesToSave = trimmed.isEmpty ? nil : trimmed
+        Task {
+            do {
+                try await bookingStore.updateNotes(bookingID: booking.id, notes: notesToSave)
+                await MainActor.run {
+                    isEditingNotes = false
+                    notesError = nil
+                }
+            } catch {
+                await MainActor.run {
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
     }
 }

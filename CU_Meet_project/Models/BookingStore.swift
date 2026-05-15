@@ -25,7 +25,7 @@ struct Booking: Identifiable, Codable, Equatable {
     var status: BookingStatus = .active
     let imageAssetName: String?
     /// Optional agenda or note attached to the booking.
-    let notes: String?
+    var notes: String?
 }
 
 /// Observable store that syncs all bookings from Firestore in real time.
@@ -69,6 +69,10 @@ class BookingStore: ObservableObject {
 
     func cancelBooking(_ booking: Booking) async throws {
         try await FirestoreService.shared.updateBookingStatus(id: booking.id, status: .cancelled)
+    }
+
+    func updateNotes(bookingID: String, notes: String?) async throws {
+        try await FirestoreService.shared.updateBookingNotes(id: bookingID, notes: notes)
     }
 
     func upcomingBookings() -> [Booking] {
