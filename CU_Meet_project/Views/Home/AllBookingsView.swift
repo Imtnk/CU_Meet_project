@@ -52,7 +52,7 @@ struct AllBookingsView: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
                 }
-                .background(Color.white)
+                .background(Color.cardBackground)
                 .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 2)
             }
 

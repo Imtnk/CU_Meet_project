@@ -62,7 +62,7 @@ struct RoomMapView: View {
                             .autocorrectionDisabled()
                     }
                     .padding(12)
-                    .background(Color.white)
+                    .background(Color.cardBackground)
                     .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
                     .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
 
@@ -92,7 +92,7 @@ struct RoomMapView: View {
                                         .fill(Color.brandPink)
                                         .frame(width: viewModel.pinSize, height: viewModel.pinSize)
                                         .shadow(color: .brandPink.opacity(0.4), radius: 4)
-                                    Image(systemName: "mappin.fill")
+                                    Image(systemName: "mappin")
                                         .font(.system(size: viewModel.pinSize * 0.45))
                                         .foregroundColor(.white)
                                 }
@@ -183,7 +183,7 @@ struct RoomMapView: View {
             Image(systemName: "chevron.right").font(.caption).foregroundColor(.mutedGray)
         }
         .padding(14)
-        .background(Color.white)
+        .background(Color.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
         .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
     }
@@ -202,7 +202,7 @@ struct RoomMapView: View {
                         .font(.subheadline).fontWeight(.semibold)
                         .foregroundColor(.brandPink)
                         .frame(width: 36, height: 36)
-                        .background(Color.white)
+                        .background(Color.cardBackground)
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.1), radius: 4)
                 }

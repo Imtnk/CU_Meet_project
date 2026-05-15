@@ -184,7 +184,7 @@ struct ProfileView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white)
+        .background(Color.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
         .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
     }
