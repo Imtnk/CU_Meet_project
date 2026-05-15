@@ -125,7 +125,6 @@ struct ProfileView: View {
                     }
                 }
             }
-            .background(Color.warmGray.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if authManager.isLoggedIn {
@@ -150,6 +149,7 @@ struct ProfileView: View {
                 Text(authManager.signInError ?? "")
             }
         }
+        .background(Color.warmGray.ignoresSafeArea())
     }
 
     private func hasDetails(_ p: AppUser) -> Bool {
