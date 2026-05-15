@@ -22,8 +22,21 @@ struct GroupsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 12) {
-                    if groupStore.isLoading {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("My Groups")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.charcoal)
+                        Text("Collaborate with your team")
+                            .font(.subheadline)
+                            .foregroundColor(.mutedGray)
+                    }
+                    .padding(.horizontal, 20)
+
+                    LazyVStack(spacing: 12) {
+                        if groupStore.isLoading {
                         ProgressView("Loading groups…")
                             .frame(maxWidth: .infinity)
                             .padding(.top, 40)
@@ -50,13 +63,12 @@ struct GroupsView: View {
                             .buttonStyle(.plain)
                         }
                     }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 20)
             }
             .background(Color.warmGray.ignoresSafeArea())
-            .navigationTitle("Groups")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {

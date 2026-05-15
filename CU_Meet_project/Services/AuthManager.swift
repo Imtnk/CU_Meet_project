@@ -19,6 +19,8 @@ class AuthManager: ObservableObject {
     /// True only when Firebase Auth established a real session (not the Google-UID fallback).
     @Published var isFirebaseAuthenticated: Bool = false
     @Published var signInError: String?
+    /// Full profile including optional fields loaded from Firestore.
+    @Published var extendedProfile: AppUser?
 
     private let userStore: UserStore
 
@@ -55,6 +57,7 @@ class AuthManager: ObservableObject {
         self.userProfile = nil
         self.currentUserID = nil
         self.isFirebaseAuthenticated = false
+        self.extendedProfile = nil
     }
 
     private func restorePreviousSignIn() {
@@ -100,13 +103,66 @@ class AuthManager: ObservableObject {
     }
 
     private func cacheCurrentUser(_ user: GIDGoogleUser, firebaseUID: String) {
-        let appUser = AppUser(
+        let baseUser = AppUser(
             id: firebaseUID,
             displayName: user.profile?.name ?? "",
+            firstName: user.profile?.givenName,
+            lastName: user.profile?.familyName,
             email: user.profile?.email,
             photoURL: user.profile?.imageURL(withDimension: 256)?.absoluteString
         )
-        userStore.upsert(appUser)
-        Task { try? await FirestoreService.shared.upsertUser(appUser) }
+        userStore.upsert(baseUser)
+        Task {
+            try? await FirestoreService.shared.upsertUser(baseUser)
+            await fetchAndMergeExtendedProfile(base: baseUser)
+        }
+    }
+
+    private func fetchAndMergeExtendedProfile(base: AppUser) async {
+        let stored = try? await FirestoreService.shared.fetchUser(userID: base.id)
+        var merged = base
+        if let stored {
+            merged.nickname = stored.nickname
+            merged.studentID = stored.studentID
+            merged.birthdate = stored.birthdate
+            merged.mostActiveDay = stored.mostActiveDay
+            merged.faculty = stored.faculty
+            merged.year = stored.year
+        }
+        await MainActor.run { extendedProfile = merged }
+    }
+
+    func saveProfile(
+        nickname: String?,
+        studentID: String?,
+        birthdate: Date?,
+        mostActiveDay: String?,
+        faculty: String?,
+        year: String?
+    ) async throws {
+        guard let userID = currentUserID else { return }
+
+        let trimNickname  = nickname?.trimmingCharacters(in: .whitespaces).nonEmpty
+        let trimStudentID = studentID?.trimmingCharacters(in: .whitespaces).nonEmpty
+        let trimFaculty   = faculty?.trimmingCharacters(in: .whitespaces).nonEmpty
+
+        var fields: [String: Any] = [:]
+        fields["nickname"]      = trimNickname    as Any? ?? FieldValue.delete()
+        fields["studentID"]     = trimStudentID   as Any? ?? FieldValue.delete()
+        fields["birthdate"]     = birthdate       as Any? ?? FieldValue.delete()
+        fields["mostActiveDay"] = mostActiveDay   as Any? ?? FieldValue.delete()
+        fields["faculty"]       = trimFaculty     as Any? ?? FieldValue.delete()
+        fields["year"]          = year            as Any? ?? FieldValue.delete()
+
+        try await FirestoreService.shared.updateUserFields(userID: userID, fields: fields)
+
+        await MainActor.run {
+            extendedProfile?.nickname      = trimNickname
+            extendedProfile?.studentID     = trimStudentID
+            extendedProfile?.birthdate     = birthdate
+            extendedProfile?.mostActiveDay = mostActiveDay
+            extendedProfile?.faculty       = trimFaculty
+            extendedProfile?.year          = year
+        }
     }
 }

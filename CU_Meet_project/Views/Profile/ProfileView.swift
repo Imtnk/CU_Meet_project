@@ -11,45 +11,72 @@ import GoogleSignIn
 
 struct ProfileView: View {
     @EnvironmentObject private var authManager: AuthManager
+    @State private var showEditProfile = false
     #if DEBUG
     @State private var seedAlert: String?
     #endif
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                if authManager.isLoggedIn {
-
-                    VStack(spacing: 16) {
-                        AsyncImage(url: authManager.userProfile?.profile?.imageURL(withDimension: 200)) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image.resizable()
-                            case .empty, .failure:
-                                Image(systemName: "person.circle.fill")
-                                    .resizable()
-                                    .foregroundColor(.mutedGray)
-                            @unknown default:
-                                Image(systemName: "person.circle.fill")
-                                    .resizable()
-                                    .foregroundColor(.mutedGray)
-                            }
-                        }
-                        .frame(width: 100, height: 100)
-                        .clipShape(Circle())
-                        .overlay(
-                            Circle()
-                                .stroke(Color.brandPink, lineWidth: 3)
-                        )
-                        .shadow(color: .brandPink.opacity(0.3), radius: 8)
-
-                        Text(authManager.userProfile?.profile?.name ?? "User Name")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Header
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Profile")
                             .font(.title2)
-                            .bold()
+                            .fontWeight(.bold)
                             .foregroundColor(.charcoal)
-
-                        Text(authManager.userProfile?.profile?.email ?? "No Email")
+                        Text("Manage your account")
+                            .font(.subheadline)
                             .foregroundColor(.mutedGray)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+
+                    if authManager.isLoggedIn {
+
+                        VStack(spacing: 16) {
+                            AsyncImage(url: authManager.userProfile?.profile?.imageURL(withDimension: 200)) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image.resizable()
+                                case .empty, .failure:
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .foregroundColor(.mutedGray)
+                                @unknown default:
+                                    Image(systemName: "person.circle.fill")
+                                        .resizable()
+                                        .foregroundColor(.mutedGray)
+                                }
+                            }
+                            .frame(width: 100, height: 100)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.brandPink, lineWidth: 3))
+                            .shadow(color: .brandPink.opacity(0.3), radius: 8)
+
+                            Text(authManager.userProfile?.profile?.name ?? "User Name")
+                                .font(.title2)
+                                .bold()
+                                .foregroundColor(.charcoal)
+
+                            if let nickname = authManager.extendedProfile?.nickname, !nickname.isEmpty {
+                                Text("\"\(nickname)\"")
+                                    .font(.subheadline)
+                                    .foregroundColor(.brandPink)
+                            }
+
+                            Text(authManager.userProfile?.profile?.email ?? "No Email")
+                                .foregroundColor(.mutedGray)
+                        }
+                        .padding(.top, 20)
+                        .padding(.horizontal, 20)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                        if let profile = authManager.extendedProfile, hasDetails(profile) {
+                            profileDetailsCard(profile)
+                                .padding(.horizontal, 20)
+                        }
 
                         Button(role: .destructive) {
                             authManager.signOut()
@@ -65,42 +92,55 @@ struct ProfileView: View {
                                 )
                         }
                         .padding(.horizontal, 20)
+
+                    } else {
+
+                        Spacer()
+
+                        Image("logo_meet")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 80, height: 80)
+                            .clipShape(Circle())
+                            .shadow(color: .brandPink.opacity(0.3), radius: 10)
+
+                        Text("Welcome to CU Meet")
+                            .font(.largeTitle)
+                            .bold()
+                            .foregroundColor(.charcoal)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+
+                        Text("Sign in to manage your profile and groups")
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.mutedGray)
+                            .padding(.horizontal)
+
+                        GoogleSignInButton(action: authManager.signIn)
+                            .buttonStyle(PlainButtonStyle())
+                            .frame(width: 280, height: 45)
+                            .padding()
+
+                        Spacer()
                     }
-                    .padding(.top, 20)
-
-                } else {
-
-                    Spacer()
-
-                    Image("logo_meet")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 80, height: 80)
-                        .clipShape(Circle())
-                        .shadow(color: .brandPink.opacity(0.3), radius: 10)
-
-                    Text("Welcome to CU Meet")
-                        .font(.largeTitle)
-                        .bold()
-                        .foregroundColor(.charcoal)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    Text("Sign in to manage your profile and groups")
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.mutedGray)
-                        .padding(.horizontal)
-
-                    GoogleSignInButton(action: authManager.signIn)
-                        .buttonStyle(PlainButtonStyle())
-                        .frame(width: 280, height: 45)
-                        .padding()
-
-                    Spacer()
                 }
             }
             .background(Color.warmGray.ignoresSafeArea())
-            .navigationTitle("Profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if authManager.isLoggedIn {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button { showEditProfile = true } label: {
+                            Image(systemName: "pencil")
+                                .foregroundColor(.brandPink)
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $showEditProfile) {
+                EditProfileView()
+                    .environmentObject(authManager)
+            }
             .alert("Sign In Failed", isPresented: Binding(
                 get: { authManager.signInError != nil },
                 set: { if !$0 { authManager.signInError = nil } }
@@ -110,5 +150,60 @@ struct ProfileView: View {
                 Text(authManager.signInError ?? "")
             }
         }
+    }
+
+    private func hasDetails(_ p: AppUser) -> Bool {
+        [p.studentID, p.faculty, p.year, p.mostActiveDay].contains(where: { $0?.isEmpty == false })
+        || p.birthdate != nil
+    }
+
+    @ViewBuilder
+    private func profileDetailsCard(_ p: AppUser) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let sid = p.studentID, !sid.isEmpty {
+                profileRow(icon: "studentdesk", label: "Student ID", value: sid)
+            }
+            if let faculty = p.faculty, !faculty.isEmpty {
+                profileRow(icon: "building.columns", label: "Faculty", value: faculty)
+            }
+            if let year = p.year, !year.isEmpty {
+                profileRow(icon: "graduationcap", label: "Year", value: year)
+            }
+            if let day = p.mostActiveDay, !day.isEmpty {
+                profileRow(icon: "calendar", label: "Most Active", value: day)
+            }
+            if let bd = p.birthdate {
+                profileRow(icon: "gift", label: "Birthday", value: birthdayString(bd))
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cardRadius))
+        .shadow(color: .black.opacity(0.04), radius: 6, x: 0, y: 2)
+    }
+
+    @ViewBuilder
+    private func profileRow(icon: String, label: String, value: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundColor(.brandPink)
+                .frame(width: 20)
+            Text(label)
+                .font(.subheadline)
+                .foregroundColor(.mutedGray)
+            Spacer()
+            Text(value)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.charcoal)
+        }
+    }
+
+    private func birthdayString(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "dd MMM yyyy"
+        return f.string(from: date)
     }
 }

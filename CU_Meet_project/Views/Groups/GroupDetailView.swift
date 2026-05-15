@@ -16,6 +16,8 @@ struct GroupDetailView: View {
     @State private var isLeaving = false
     @State private var errorMessage: String?
     @State private var codeCopied = false
+    @State private var selectedMember: AppUser?
+    @State private var showMemberDetail = false
 
     private var currentGroup: Group? {
         groupStore.groups.first(where: { $0.id == group.id })
@@ -88,26 +90,18 @@ struct GroupDetailView: View {
 
                         let memberIDs = currentGroup?.memberIDs ?? group.memberIDs
                         ForEach(memberIDs, id: \.self) { memberID in
-                            HStack(spacing: 12) {
-                                Circle()
-                                    .fill(Color.brandPinkLight)
-                                    .frame(width: 40, height: 40)
-                                    .overlay(
-                                        Image(systemName: "person.fill")
-                                            .font(.subheadline).foregroundColor(.brandPink)
-                                    )
+                            MemberRowView(
+                                memberID: memberID,
+                                displayName: userStore.displayName(for: memberID),
+                                isCurrentUser: memberID == authManager.currentUserID,
+                                onTap: {
+                                    selectedMember =
+                                        userStore.user(by: memberID)
+                                        ?? AppUser.fallbackUser(id: memberID)
 
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(userStore.displayName(for: memberID))
-                                        .font(.subheadline).fontWeight(.medium).foregroundColor(.charcoal)
-                                    if memberID == authManager.currentUserID {
-                                        Text("You")
-                                            .font(.caption).foregroundColor(.brandPink)
-                                    }
+                                    showMemberDetail = true
                                 }
-
-                                Spacer()
-                            }
+                            )
                         }
                     }
                 }
@@ -144,6 +138,12 @@ struct GroupDetailView: View {
         .background(Color.warmGray.ignoresSafeArea())
         .navigationTitle(currentGroup?.name ?? group.name)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showMemberDetail) {
+            if let member = selectedMember {
+                MemberDetailView(memberID: member.id)
+                    .environmentObject(userStore)
+            }
+        }
         .alert("Leave Group?", isPresented: $showLeaveAlert) {
             Button("Leave", role: .destructive) {
                 isLeaving = true

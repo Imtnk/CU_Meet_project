@@ -5,6 +5,10 @@
 
 import Foundation
 
+extension String {
+    var nonEmpty: String? { isEmpty ? nil : self }
+}
+
 enum ValidationHelpers {
 
     // MARK: - Group Validation

@@ -12,9 +12,12 @@ struct BookingDetailView: View {
     @EnvironmentObject var groupStore: GroupStore
     @EnvironmentObject var bookingStore: BookingStore
     @EnvironmentObject var userStore: UserStore
+    @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) var dismiss
     @State private var showCancelAlert = false
     @State private var errorMessage: String?
+    @State private var selectedMember: AppUser?
+    @State private var showMemberDetail = false
 
     var body: some View {
         ScrollView {
@@ -75,17 +78,18 @@ struct BookingDetailView: View {
                                     .font(.subheadline).fontWeight(.medium).foregroundColor(.charcoal)
 
                                 ForEach(group.memberIDs, id: \.self) { memberID in
-                                    HStack(spacing: 10) {
-                                        Circle()
-                                            .fill(Color.brandPinkLight)
-                                            .frame(width: 32, height: 32)
-                                            .overlay(
-                                                Image(systemName: "person.fill")
-                                                    .font(.caption).foregroundColor(.brandPink)
-                                            )
-                                        Text(userStore.displayName(for: memberID))
-                                            .font(.subheadline).foregroundColor(.charcoal)
-                                    }
+                                    MemberRowView(
+                                        memberID: memberID,
+                                        displayName: userStore.displayName(for: memberID),
+                                        isCurrentUser: memberID == authManager.currentUserID,
+                                        onTap: {
+                                            selectedMember =
+                                                userStore.user(by: memberID)
+                                                ?? AppUser.fallbackUser(id: memberID)
+
+                                            showMemberDetail = true
+                                        }
+                                    )
                                 }
                             } else {
                                 Text("Group not found")
@@ -121,6 +125,12 @@ struct BookingDetailView: View {
         .background(Color.warmGray.ignoresSafeArea())
         .navigationTitle("Booking Details")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showMemberDetail) {
+            if let member = selectedMember {
+                MemberDetailView(memberID: member.id)
+                    .environmentObject(userStore)
+            }
+        }
         .alert("Cancel Booking?", isPresented: $showCancelAlert) {
             Button("Cancel Booking", role: .destructive) {
                 Task {
