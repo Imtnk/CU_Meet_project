@@ -45,6 +45,14 @@ enum ValidationHelpers {
 
     // MARK: - Booking Validation
 
+    static func validateBookingNotes(_ notes: String) -> (isValid: Bool, error: String?) {
+        let trimmed = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.count > 200 {
+            return (false, "Notes must be 200 characters or less")
+        }
+        return (true, nil)
+    }
+
     static func validateBookingDateTime(date: Date, timeSlot: String) -> (isValid: Bool, error: AppError?) {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"

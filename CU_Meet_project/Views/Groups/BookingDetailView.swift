@@ -98,6 +98,18 @@ struct BookingDetailView: View {
                         }
                     }
 
+                    // Notes section (shown only when notes were recorded)
+                    if let notes = booking.notes {
+                        sectionCard {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Notes")
+                                    .font(.headline).foregroundColor(.charcoal)
+                                Text(notes)
+                                    .font(.subheadline).foregroundColor(.mutedGray)
+                            }
+                        }
+                    }
+
                     // Cancel button (only for upcoming bookings)
                     if bookingStore.isUpcoming(booking) {
                         Button {

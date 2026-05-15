@@ -21,6 +21,7 @@ struct Booking: Identifiable, Codable, Equatable {
     let timeSlot: String
     var status: BookingStatus = .active
     let imageAssetName: String?
+    let notes: String?
 }
 
 class BookingStore: ObservableObject {
