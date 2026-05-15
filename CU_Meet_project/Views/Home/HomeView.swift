@@ -123,11 +123,21 @@ struct HomeView: View {
 
                     // Upcoming bookings
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Upcoming")
-                            .font(.headline)
-                            .fontWeight(.bold)
-                            .foregroundColor(.charcoal)
-                            .padding(.horizontal, 20)
+                        HStack {
+                            Text("Upcoming")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .foregroundColor(.charcoal)
+                            Spacer()
+                            if !upcomingBookings.isEmpty {
+                                NavigationLink(destination: AllBookingsView()) {
+                                    Text("See all")
+                                        .font(.subheadline)
+                                        .foregroundColor(.brandPink)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
 
                         if bookingStore.isLoading {
                             ProgressView()
