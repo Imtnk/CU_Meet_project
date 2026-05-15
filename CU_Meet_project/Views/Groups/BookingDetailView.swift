@@ -27,6 +27,8 @@ struct BookingDetailView: View {
     @State private var editedNotes: String = ""
     /// Validation error from the notes text field.
     @State private var notesError: String?
+    /// Shows a success toast after notes are saved.
+    @State private var showNotesToast = false
 
     var body: some View {
         ScrollView {
@@ -197,6 +199,7 @@ struct BookingDetailView: View {
             }
         }
         .background(Color.warmGray.ignoresSafeArea())
+        .toast(isPresented: $showNotesToast, message: "Notes Saved!")
         .navigationTitle("Booking Details")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showMemberDetail) {
@@ -265,6 +268,7 @@ struct BookingDetailView: View {
                 await MainActor.run {
                     isEditingNotes = false
                     notesError = nil
+                    showNotesToast = true
                 }
             } catch {
                 await MainActor.run {

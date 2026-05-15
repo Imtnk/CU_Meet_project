@@ -30,6 +30,8 @@ struct BookingConfirmationView: View {
     @State private var isSubmitting = false
     @State private var notes = ""
     @State private var notesError: String?
+    /// Shows a success toast after the booking is created.
+    @State private var showSuccessToast = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -135,7 +137,10 @@ struct BookingConfirmationView: View {
                         do {
                             try await bookingStore.addBooking(booking)
                             NotificationManager.shared.scheduleReminder(for: booking)
-                            onComplete()
+                            showSuccessToast = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                                onComplete()
+                            }
                         } catch {
                             errorMessage = error.localizedDescription
                             isSubmitting = false
@@ -161,6 +166,7 @@ struct BookingConfirmationView: View {
             }
         }
         .padding()
+        .toast(isPresented: $showSuccessToast, message: "Booking Confirmed!")
         .alert("Something went wrong", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }

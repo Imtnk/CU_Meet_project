@@ -96,8 +96,9 @@ struct Booking {
     let date: Date
     let timeSlot: String         // "09:00 - 10:00"
     var status: BookingStatus    // .active or .cancelled
-    let imageAssetName: String?
-    let notes: String?           // NEW: Optional agenda/meeting purpose
+    var imageAssetName: String?
+    /// Optional agenda or note attached to the booking; mutable for inline editing.
+    var notes: String?
 }
 ```
 - **Lifecycle:** Created in BookingConfirmationView, persisted to Firestore, displayed and editable in BookingDetailView
@@ -159,8 +160,9 @@ ViewModels transform models into UI-ready data.
 ### 4. **Utilities Layer** (Helpers)
 
 #### **AppTheme** (`Utilities/AppTheme.swift`)
-- Design tokens: six named colors (`brandPink`, `brandPinkLight`, `brandPinkDark`, `charcoal`, `warmGray`, `mutedGray`), three corner radii (`cardRadius`, `chipRadius`, `buttonRadius`)
-- `Color` convenience extension exposes theme colors as static members and provides a `init(hex:)` for CSS-style `#RGB` / `#RRGGBB` / `#RRGGBBAA` strings
+- Design tokens: six dynamic colors (`brandPink`, `brandPinkLight`, `brandPinkDark`, `charcoal`, `warmGray`, `mutedGray`), three corner radii (`cardRadius`, `chipRadius`, `buttonRadius`), and `cardBackground`
+- Dark mode support via `UIColor.dynamicColor(lightHex:darkHex:)` — each color provides separate light/dark hex values, selected automatically based on the OS Appearance setting
+- `Color` convenience extension exposes theme colors as static members and provides `init(hex:)` for CSS-style hex strings
 - Single source of truth for visual style, used across all views
 
 #### **ValidationHelpers** (`Utilities/ValidationHelpers.swift`)
@@ -182,8 +184,8 @@ Views are composed hierarchically, with environment objects injected at the top 
 - **HomeView:** Upcoming bookings list + quick-access room grid; shows user's display name in header
 - **RoomDetailView:** Full room info sheet (facilities, rating, capacity), available time slots picker, group selector, and booking action
 - **RoomMapView:** `MKMapView`-backed map with custom annotation pins sized by zoom level; search bar for filtering by name/facility; bottom sheet list view; zoom in/out buttons and reset camera
-- **BookingConfirmationView:** Review-and-confirm sheet with room image, selected date/time/group, optional notes text field (200-char max with live validation and character counter), cancel/confirm buttons
-- **BookingDetailView:** Hero image, room/time section, group info with full member list (tappable rows navigate to `MemberDetailView`), editable notes card with inline TextField (live validation, character counter, cancel/save), cancel booking with confirmation alert
+- **BookingConfirmationView:** Review-and-confirm sheet with room image, selected date/time/group, optional notes text field (200-char max with live validation and character counter), cancel/confirm buttons. Shows a "Booking Confirmed!" toast on success
+- **BookingDetailView:** Hero image, room/time section, group info with full member list (tappable rows navigate to `MemberDetailView`), editable notes card with inline TextField (live validation, character counter, cancel/save — shows "Notes Saved!" toast), cancel booking with confirmation alert
 - **AllBookingsView:** Scrollable list of all upcoming bookings filterable by group; each row is an `UpcomingBookingCard`
 - **RoomDetailSheet:** Bottom sheet with room image, rating pill, capacity badge, and facility grid
 
@@ -191,19 +193,20 @@ Views are composed hierarchically, with environment objects injected at the top 
 - **GroupsView:** List of user's groups with pull-to-refresh
 - **GroupDetailView:** Group name, member rows (`MemberRowView` with "You" badge), join code badge, leave group action, upcoming bookings for the group via sheet
 - **CreateGroupView:** Form with group name field (validated), auto-generated join code, create action
-- **JoinGroupView:** 6-digit code entry with length counter, validation feedback, join button
+- **JoinGroupView:** 6-digit code entry with length counter, validation feedback, join button. Success shows a toast; errors show an alert
 - **GroupCard:** Reusable card showing group name, member count, and join code
 - **BookingDetailView:** Shared booking detail used from both Home and Groups tabs
 
 #### **Profile Tab** (`Views/Profile/*.swift`)
 - **ProfileView:** Signed-in → avatar (AsyncImage), name, nickname, email, editable CU profile card, sign-out button. Signed-out → logo, welcome text, Google Sign-In button
-- **EditProfileView:** Form sheet for editing CU profile fields (nickname, student ID with 10-digit validation, faculty, year of study picker, birthdate toggle, most active day picker)
+- **EditProfileView:** Form sheet for editing CU profile fields (nickname, student ID with 10-digit validation, faculty, year of study picker, birthdate toggle, most active day picker). Shows a "Profile Saved!" toast before dismissing
 - **MemberDetailView:** Full-screen detail for any group member — avatar (from `photoURL`), name/email, Account section (first/last name, email), CU Profile section (nickname, student ID, faculty, year), Personal section (birthdate, most active day). Data fetched from Firestore on appear
 
 #### **Components** (`Views/Components/*.swift`)
 - **MemberRowView:** Tappable row with avatar circle, display name, "You" badge for current user, chevron
 - **UpcomingBookingCard:** Compact horizontal card showing group name, room, time slot, date, chevron
 - **RoomFeatureCard:** Hero card with room image overlay, name, capacity label, rating pill
+- **ToastModifier:** Reusable overlay modifier (`View.toast(isPresented:message:)`) — pink capsule banner that slides from the top, auto‑dismisses after 2s. Used for success feedback on booking confirmations, profile saves, notes edits, group creation, and group joining
 
 #### **SplashView** & **CU_Meet_projectApp**
 - **SplashView:** Branded overlay (pink background, logo, app name) with fade-out transition after 1.8s
@@ -290,6 +293,12 @@ User profile saved to Firestore → extendedProfile populated
 ### 6. **In-Memory Stores + Firestore**
 - Stores (`BookingStore`, `GroupStore`, `UserStore`) are `@StateObject` at the root and
   injected as `@EnvironmentObject` — no singleton accessors, no service locator
+
+### 7. **Dark Mode via Dynamic Colors**
+- Every theme color is defined as a `UIColor(dynamicProvider:)` pair (light hex + dark hex)
+- `AppTheme.cardBackground` replaces hardcoded `Color.white` across all card backgrounds
+- System colors (`.green`, `.red`) adapt automatically in SwiftUI
+- No `@Environment(\.colorScheme)` branching needed — the trait collection handles switching
 
 ---
 

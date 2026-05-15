@@ -23,6 +23,8 @@ struct CreateGroupView: View {
     @State private var isCreating = false
     /// Non-nil when group creation fails; drives the error alert.
     @State private var errorMessage: String?
+    /// Shows a success toast after the group is created.
+    @State private var showSuccessToast = false
 
     /// True when the trimmed name is non-empty and at most 100 characters.
     var isValidName: Bool {
@@ -63,6 +65,7 @@ struct CreateGroupView: View {
                             name: groupName,
                             creatorID: authManager.currentUserID ?? ""
                         )
+                        showSuccessToast = true
                     } catch {
                         errorMessage = error.localizedDescription
                     }
@@ -87,6 +90,7 @@ struct CreateGroupView: View {
             Spacer()
         }
         .padding()
+        .toast(isPresented: $showSuccessToast, message: "Group Created!")
         .alert("Something went wrong", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }

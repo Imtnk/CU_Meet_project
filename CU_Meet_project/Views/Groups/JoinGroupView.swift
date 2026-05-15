@@ -16,6 +16,10 @@ struct JoinGroupView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var alertTitle = ""
+    /// Shows a success toast after joining a group.
+    @State private var showSuccessToast = false
+    /// Text shown in the success toast.
+    @State private var successMessage = ""
 
     /// Whether the current input is a valid 6‑digit numeric code.
     var isValidCode: Bool {
@@ -62,22 +66,24 @@ struct JoinGroupView: View {
                         )
                         switch result {
                         case .success(let group):
-                            alertTitle = "Success"
-                            alertMessage = "Joined \(group.name)!"
+                            successMessage = "Joined \(group.name)!"
+                            showSuccessToast = true
                             code = ""
                         case .alreadyMember(let group):
                             alertTitle = "Already Member"
                             alertMessage = "You're already a member of \(group.name)"
+                            showAlert = true
                         case .notFound:
                             alertTitle = "Not Found"
                             alertMessage = "No group found with this code"
+                            showAlert = true
                         }
                     } catch {
                         alertTitle = "Error"
                         alertMessage = error.localizedDescription
+                        showAlert = true
                     }
                     isJoining = false
-                    showAlert = true
                 }
             }) {
                 Text(isJoining ? "Joining…" : "Join")
@@ -92,6 +98,7 @@ struct JoinGroupView: View {
             Spacer()
         }
         .padding()
+        .toast(isPresented: $showSuccessToast, message: successMessage)
         .alert(alertTitle, isPresented: $showAlert) {
             Button("OK", role: .cancel) { }
         } message: {

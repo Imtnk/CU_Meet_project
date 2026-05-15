@@ -24,6 +24,8 @@ struct EditProfileView: View {
 
     @State private var isSaving = false
     @State private var studentIDError: String?
+    /// Shows a success toast after the profile is saved.
+    @State private var showSuccessToast = false
 
     /// Weekday options for the "Most Active Day" picker.
     private let weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -94,6 +96,7 @@ struct EditProfileView: View {
             }
             .onAppear { loadCurrentValues() }
         }
+        .toast(isPresented: $showSuccessToast, message: "Profile Saved!")
     }
 
     /// Populates form fields from the authenticated user's existing profile.
@@ -130,7 +133,12 @@ struct EditProfileView: View {
                     faculty:       faculty.nonEmpty,
                     year:          year.nonEmpty
                 )
-                await MainActor.run { dismiss() }
+                await MainActor.run {
+                    showSuccessToast = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        dismiss()
+                    }
+                }
             } catch {
                 await MainActor.run { isSaving = false }
             }

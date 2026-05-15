@@ -206,6 +206,7 @@ struct RoomMapView: View {
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.1), radius: 4)
                 }
+
             }
         }
     }
