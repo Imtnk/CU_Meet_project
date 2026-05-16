@@ -54,7 +54,9 @@ struct GroupDetailView: View {
         bookingStore.bookings
             .filter { $0.groupID == group.id && $0.status == .active && bookingStore.isUpcoming($0) }
             .sorted {
-                if $0.date == $1.date { return $0.timeSlot < $1.timeSlot }
+                if Calendar.current.isDate($0.date, inSameDayAs: $1.date) {
+                    return $0.timeSlot < $1.timeSlot
+                }
                 return $0.date < $1.date
             }
     }
