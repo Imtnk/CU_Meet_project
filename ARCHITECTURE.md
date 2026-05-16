@@ -62,6 +62,7 @@ Services handle all external API calls and data persistence. They're singletons 
   - `createGroup(name:creatorID:)` — Validate name, generate unique 6-digit code, persist to Firestore
   - `joinGroup(code:userID:)` — Look up group by join code, append user to member list
   - `leaveGroup(groupID:userID:)` — Remove user from members; delete group if last member
+  - `removeMember(groupID:userID:)` — Creator removes another member from the group
   - `updateGroupName(id:name:)` — Rename the group (validated); only the creator can edit
   - `deleteGroup(id:)` — Permanently delete the group and all its bookings; only the creator can do this
   - `myGroups(currentUserID:)` — Filter groups the current user belongs to
@@ -197,7 +198,7 @@ Views are composed hierarchically, with environment objects injected at the top 
 
 #### **Groups Tab** (`Views/Groups/*.swift`)
 - **GroupsView:** List of user's groups with pull-to-refresh
-- **GroupDetailView:** Group name (editable inline by creator via TextField + Save/Cancel), member rows (`MemberRowView` with "You" badge), join code badge (tap to copy), upcoming bookings for the group (tappable rows navigate to `BookingDetailView`), leave group action, delete group action (creator only, with confirmation alert)
+- **GroupDetailView:** Group name (editable inline by creator via TextField + Save/Cancel), member rows (`MemberRowView` with "You" badge and red minus button to remove by creator), join code badge (tap to copy), upcoming bookings for the group (tappable rows navigate to `BookingDetailView`), leave group action, delete group action (creator only, with confirmation alert)
 - **CreateGroupView:** Form with group name field (validated), auto-generated join code, create action
 - **JoinGroupView:** 6-digit code entry with length counter, validation feedback, join button. Success shows a toast; errors show an alert
 - **GroupCard:** Reusable card showing group name, member count, and join code
@@ -209,7 +210,7 @@ Views are composed hierarchically, with environment objects injected at the top 
 - **MemberDetailView:** Full-screen detail for any group member — avatar (from `photoURL`), name/email, Account section (first/last name, email), CU Profile section (nickname, student ID, faculty, year), Personal section (birthdate, most active day). Data fetched from Firestore on appear
 
 #### **Components** (`Views/Components/*.swift`)
-- **MemberRowView:** Tappable row with avatar circle, display name, "You" badge for current user, chevron
+- **MemberRowView:** Tappable row with avatar circle, display name, "You" badge for current user, chevron, and optional red remove button (shown to group creator)
 - **UpcomingBookingCard:** Compact horizontal card showing group name, room, time slot, date, chevron
 - **RoomFeatureCard:** Hero card with room image overlay, name, capacity label, rating pill
 - **ToastModifier:** Reusable overlay modifier (`View.toast(isPresented:message:)`) — pink capsule banner that slides from the top, auto‑dismisses after 2s. Used for success feedback on booking confirmations, profile saves, notes edits, group creation, and group joining

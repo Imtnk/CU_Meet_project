@@ -114,6 +114,13 @@ class GroupStore: ObservableObject {
         try await FirestoreService.shared.deleteGroup(id: id)
     }
 
+    func removeMember(groupID: String, userID: String) async throws {
+        guard let group = groups.first(where: { $0.id == groupID }),
+              group.memberIDs.contains(userID) else { return }
+        let remaining = group.memberIDs.filter { $0 != userID }
+        try await FirestoreService.shared.updateGroupMembers(groupID: groupID, memberIDs: remaining)
+    }
+
     func groupName(for id: String) -> String {
         groups.first(where: { $0.id == id })?.name ?? "Unknown Group"
     }

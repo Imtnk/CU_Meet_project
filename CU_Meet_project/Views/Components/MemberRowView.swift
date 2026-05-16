@@ -16,35 +16,47 @@ struct MemberRowView: View {
     let isCurrentUser: Bool
     /// Action triggered when the row is tapped.
     let onTap: () -> Void
+    /// If non-nil, shows a red remove button. Called with the member's display name.
+    var onRemove: ((String) -> Void)?
 
     var body: some View {
-        Button {
-            onTap()
-        } label: {
-            HStack(spacing: 12) {
-                Circle()
-                    .fill(Color.brandPinkLight)
-                    .frame(width: 40, height: 40)
-                    .overlay(
-                        Image(systemName: "person.fill")
-                            .font(.subheadline).foregroundColor(.brandPink)
-                    )
+        HStack(spacing: 12) {
+            Circle()
+                .fill(Color.brandPinkLight)
+                .frame(width: 40, height: 40)
+                .overlay(
+                    Image(systemName: "person.fill")
+                        .font(.subheadline).foregroundColor(.brandPink)
+                )
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(displayName)
-                        .font(.subheadline).fontWeight(.medium).foregroundColor(.charcoal)
-                    if isCurrentUser {
-                        Text("You")
-                            .font(.caption).foregroundColor(.brandPink)
-                    }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(displayName)
+                    .font(.subheadline).fontWeight(.medium).foregroundColor(.charcoal)
+                if isCurrentUser {
+                    Text("You")
+                        .font(.caption).foregroundColor(.brandPink)
                 }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.caption).foregroundColor(.mutedGray)
             }
+
+            Spacer()
+
+            if let onRemove {
+                Button {
+                    onRemove(displayName)
+                } label: {
+                    Image(systemName: "minus.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.red)
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 4)
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.caption).foregroundColor(.mutedGray)
         }
+        .contentShape(Rectangle())
+        .onTapGesture { onTap() }
     }
 }
 

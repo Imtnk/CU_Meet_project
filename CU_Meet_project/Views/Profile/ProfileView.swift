@@ -101,29 +101,31 @@ struct ProfileView: View {
 
                         Spacer()
 
-                        Image("logo_meet")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 80, height: 80)
-                            .clipShape(Circle())
-                            .shadow(color: .brandPink.opacity(0.3), radius: 10)
+                        VStack(spacing: 16) {
+                            Image("logo_meet")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 120, height: 120)
+                                .clipShape(Circle())
+                                .shadow(color: .brandPink.opacity(0.3), radius: 10)
 
-                        Text("Welcome to CU Meet")
-                            .font(.largeTitle)
-                            .bold()
-                            .foregroundColor(.charcoal)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                            Text("Welcome to CU Meet")
+                                .font(.largeTitle)
+                                .bold()
+                                .foregroundColor(.charcoal)
+                                .multilineTextAlignment(.center)
 
-                        Text("Sign in to manage your profile and groups")
-                            .multilineTextAlignment(.center)
-                            .foregroundColor(.mutedGray)
-                            .padding(.horizontal)
+                            Text("Sign in to manage your profile and groups")
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(.mutedGray)
 
-                        GoogleSignInButton(action: authManager.signIn)
-                            .buttonStyle(PlainButtonStyle())
-                            .frame(width: 280, height: 45)
-                            .padding()
+                            GoogleSignInButton(action: authManager.signIn)
+                                .buttonStyle(PlainButtonStyle())
+                                .frame(width: 280, height: 45)
+                                .padding(.top, 8)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.horizontal)
 
                         Spacer()
                     }
@@ -140,6 +142,7 @@ struct ProfileView: View {
                     }
                 }
             }
+            .background(Color.warmGray.ignoresSafeArea())
             .sheet(isPresented: $showEditProfile) {
                 EditProfileView()
                     .environmentObject(authManager)
@@ -153,7 +156,6 @@ struct ProfileView: View {
                 Text(authManager.signInError ?? "")
             }
         }
-        .background(Color.warmGray.ignoresSafeArea())
     }
 
     /// Whether the user has any non‑empty optional profile fields to display.

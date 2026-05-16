@@ -38,6 +38,7 @@
 - **Delete group** (creator only): permanently deletes group and all associated bookings with confirmation alert
 - **Edit group name** (creator only): inline TextField with validation and Save/Cancel
 - **Member list**: tappable rows with display name, "You" badge for current user
+- **Remove member** (creator only): red minus button on each member row with confirmation alert
 - **Member detail**: view any member's profile (name, email, CU fields, personal info)
 - **Copy join code**: tap to copy code to clipboard with checkmark feedback
 - **Upcoming bookings per group**: filtered list with tappable rows to booking detail

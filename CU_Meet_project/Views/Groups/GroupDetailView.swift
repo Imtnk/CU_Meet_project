@@ -19,6 +19,10 @@ struct GroupDetailView: View {
     @State private var showLeaveAlert = false
     /// Controls presentation of the delete-group confirmation alert.
     @State private var showDeleteAlert = false
+    /// Member ID pending removal confirmation.
+    @State private var memberToRemove: String?
+    /// Display name of the member pending removal (for the alert).
+    @State private var memberToRemoveName: String = ""
     /// True while the leave-group network call is in flight.
     @State private var isLeaving = false
     /// True while the delete-group network call is in flight.
@@ -173,6 +177,7 @@ struct GroupDetailView: View {
                             .font(.headline).foregroundColor(.charcoal)
 
                         let memberIDs = currentGroup?.memberIDs ?? group.memberIDs
+                        let isCreator = (currentGroup?.creatorID ?? group.creatorID) == authManager.currentUserID
                         ForEach(memberIDs, id: \.self) { memberID in
                             MemberRowView(
                                 memberID: memberID,
@@ -184,7 +189,13 @@ struct GroupDetailView: View {
                                         ?? AppUser.unknownUser
 
                                     showMemberDetail = true
-                                }
+                                },
+                                onRemove: isCreator && memberID != authManager.currentUserID
+                                    ? { name in
+                                        memberToRemoveName = name
+                                        memberToRemove = memberID
+                                    }
+                                    : nil
                             )
                         }
                     }
@@ -335,6 +346,26 @@ struct GroupDetailView: View {
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("This will permanently delete the group and all its bookings. This cannot be undone.")
+        }
+        .alert("Remove Member?", isPresented: Binding(
+            get: { memberToRemove != nil },
+            set: { if !$0 { memberToRemove = nil } }
+        )) {
+            Button("Remove", role: .destructive) {
+                if let memberID = memberToRemove {
+                    Task {
+                        do {
+                            try await groupStore.removeMember(groupID: group.id, userID: memberID)
+                        } catch {
+                            errorMessage = error.localizedDescription
+                        }
+                        memberToRemove = nil
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Remove \(memberToRemoveName) from this group?")
         }
         .alert("Something went wrong", isPresented: Binding(
             get: { errorMessage != nil },
