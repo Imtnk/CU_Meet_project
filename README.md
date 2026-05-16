@@ -3,4 +3,4 @@ A simple meeting room (not real) booking application for CU students built with 
 
 ## Documentation
 - [Architecture](ARCHITECTURE.md)
-- [Features](FEATURE.md)
+- [Features](FEATURES.md)
