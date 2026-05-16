@@ -1,23 +1,20 @@
-//
-//  MainTabView.swift
-//  CU_Meet_project
-//
-//  Created by Imtnk on 3/4/2569 BE.
-//
-
 import SwiftUI
 
+/// Root tab container that switches between Home, Groups, and Profile tabs.
 struct MainTabView: View {
 
+    /// Shared authentication state used to gate tab content and drive store listeners.
     @EnvironmentObject var authManager: AuthManager
+    /// Shared group data source; listening is started/stopped as auth state changes.
     @EnvironmentObject var groupStore: GroupStore
+    /// Shared booking data source; listening is started/stopped as auth state changes.
     @EnvironmentObject var bookingStore: BookingStore
+    /// Currently selected tab.
     @State private var selectedTab: Tab = .home
 
+    /// Identifiers for the three main application tabs.
     enum Tab {
-        case home
-        case groups
-        case profile
+        case home, groups, profile
     }
 
     var body: some View {
@@ -36,42 +33,33 @@ struct MainTabView: View {
                 .background(Color.red.opacity(0.85))
             }
 
-        TabView(selection: $selectedTab) {
-
-            // HOME
-            SwiftUI.Group {
-                if authManager.isLoggedIn {
-                    HomeView()
-                } else {
-                    SignInRequiredView()
+            TabView(selection: $selectedTab) {
+                SwiftUI.Group {
+                    if authManager.isLoggedIn {
+                        HomeView()
+                    } else {
+                        SignInRequiredView()
+                    }
                 }
-            }
-            .tabItem {
-                Label("Home", systemImage: "house")
-            }
-            .tag(Tab.home)
+                .tabItem { Label("Explore", systemImage: "house.fill") }
+                .tag(Tab.home)
 
-            // GROUP
-            SwiftUI.Group {
-                if authManager.isLoggedIn {
-                    GroupsView()
-                } else {
-                    SignInRequiredView()
+                SwiftUI.Group {
+                    if authManager.isLoggedIn {
+                        GroupsView()
+                    } else {
+                        SignInRequiredView()
+                    }
                 }
-            }
-            .tabItem {
-                Label("Groups", systemImage: "person.3")
-            }
-            .tag(Tab.groups)
+                .tabItem { Label("Groups", systemImage: "person.3.fill") }
+                .tag(Tab.groups)
 
-            // PROFILE
-            ProfileView()
-                .tabItem {
-                    Label("Profile", systemImage: "person")
-                }
-                .tag(Tab.profile)
+                ProfileView()
+                    .tabItem { Label("Profile", systemImage: "person.fill") }
+                    .tag(Tab.profile)
+            }
+            .tint(.brandPink)
         }
-        } // end VStack
         .onChange(of: authManager.isLoggedIn) { _, isLoggedIn in
             if isLoggedIn {
                 bookingStore.startListening()
@@ -83,9 +71,7 @@ struct MainTabView: View {
         }
         .onChange(of: authManager.currentUserID) { _, newID in
             groupStore.startListening(for: newID ?? "")
-            if authManager.isLoggedIn {
-                bookingStore.startListening()
-            }
+            if authManager.isLoggedIn { bookingStore.startListening() }
         }
         .onAppear {
             if authManager.isLoggedIn {
@@ -96,6 +82,7 @@ struct MainTabView: View {
     }
 }
 
+/// Placeholder shown in a tab when the user is not signed in.
 private struct SignInRequiredView: View {
     var body: some View {
         NavigationStack {
@@ -103,12 +90,13 @@ private struct SignInRequiredView: View {
                 Spacer()
                 Image(systemName: "person.crop.circle.badge.exclamationmark")
                     .font(.system(size: 64))
-                    .foregroundColor(.gray)
+                    .foregroundColor(.brandPink)
                 Text("Sign In Required")
                     .font(.title2)
                     .fontWeight(.semibold)
+                    .foregroundColor(.charcoal)
                 Text("Go to the Profile tab to sign in.")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.mutedGray)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 Spacer()

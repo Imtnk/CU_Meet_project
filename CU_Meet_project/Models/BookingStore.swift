@@ -7,21 +7,30 @@ import Foundation
 import Combine
 import FirebaseFirestore
 
+/// Lifecycle state of a room booking.
 enum BookingStatus: String, Codable {
     case active
     case cancelled
 }
 
+/// A single room reservation made by a group.
 struct Booking: Identifiable, Codable, Equatable {
     let id: String
     let roomID: String
     let roomName: String
     let groupID: String
     let date: Date
+    /// Time range formatted as `"HH:mm - HH:mm"`.
     let timeSlot: String
     var status: BookingStatus = .active
+    let imageAssetName: String?
+    /// Optional agenda or note attached to the booking.
+    var notes: String?
+    /// The Firebase UID of the user who created the booking; `nil` for legacy bookings.
+    let creatorID: String?
 }
 
+/// Observable store that syncs all bookings from Firestore in real time.
 class BookingStore: ObservableObject {
 
     @Published var bookings: [Booking] = []
@@ -30,6 +39,7 @@ class BookingStore: ObservableObject {
 
     deinit { listener?.remove() }
 
+    /// Attaches a Firestore snapshot listener and populates `bookings`.
     func startListening() {
         listener?.remove()
         isLoading = true
@@ -61,6 +71,11 @@ class BookingStore: ObservableObject {
 
     func cancelBooking(_ booking: Booking) async throws {
         try await FirestoreService.shared.updateBookingStatus(id: booking.id, status: .cancelled)
+    }
+
+    /// Persists an edited notes/agenda value for the given booking.
+    func updateNotes(bookingID: String, notes: String?) async throws {
+        try await FirestoreService.shared.updateBookingNotes(id: bookingID, notes: notes)
     }
 
     func upcomingBookings() -> [Booking] {

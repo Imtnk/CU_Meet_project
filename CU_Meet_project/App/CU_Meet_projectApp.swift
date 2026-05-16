@@ -1,15 +1,10 @@
-//
-//  CU_Meet_projectApp.swift
-//  CU_Meet_project
-//
-//  Created by Imtnk on 3/4/2569 BE.
-//
-
 import SwiftUI
 import FirebaseCore
 import GoogleSignIn
 import UserNotifications
 
+/// Root application entry point. Configures Firebase, Google Sign‑In, and
+/// injects all top‑level stores into the view hierarchy.
 @main
 struct CU_Meet_projectApp: App {
 
@@ -17,6 +12,8 @@ struct CU_Meet_projectApp: App {
     @StateObject private var groupStore   = GroupStore()
     @StateObject private var userStore: UserStore
     @StateObject private var authManager: AuthManager
+    /// Whether the branded splash overlay is still visible.
+    @State private var showSplash = true
 
     init() {
         FirebaseApp.configure()
@@ -33,14 +30,26 @@ struct CU_Meet_projectApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
-                .environmentObject(bookingStore)
-                .environmentObject(groupStore)
-                .environmentObject(userStore)
-                .environmentObject(authManager)
-                .onOpenURL { url in
-                    GIDSignIn.sharedInstance.handle(url)
+            ZStack {
+                MainTabView()
+                    .environmentObject(bookingStore)
+                    .environmentObject(groupStore)
+                    .environmentObject(userStore)
+                    .environmentObject(authManager)
+                    .onOpenURL { url in
+                        GIDSignIn.sharedInstance.handle(url)
+                    }
+                if showSplash {
+                    SplashView()
+                        .transition(.opacity)
+                        .zIndex(1)
                 }
+            }
+            .animation(.easeOut(duration: 0.4), value: showSplash)
+            .task {
+                try? await Task.sleep(for: .seconds(1.8))
+                showSplash = false
+            }
         }
     }
 }

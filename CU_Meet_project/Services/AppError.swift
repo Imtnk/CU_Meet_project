@@ -5,16 +5,27 @@
 
 import Foundation
 
+/// Domain‑specific errors with user‑facing descriptions and recovery suggestions.
 enum AppError: LocalizedError {
+    /// Group name fails validation constraints.
     case invalidGroupName(reason: String)
+    /// Join code is not exactly 6 digits.
     case invalidJoinCode
+    /// No group exists for the given join code.
     case groupNotFound
+    /// Current user is already a member of the target group.
     case alreadyMember
+    /// Unable to generate a non‑colliding 6‑digit code after multiple attempts.
     case uniqueCodeGenerationFailed
+    /// The requested time slot overlaps an existing booking.
     case bookingConflict
+    /// Booking date/time is in the past.
     case pastDateTime
+    /// Action requires authentication.
     case authRequired
+    /// Network connectivity failure.
     case networkError
+    /// Catch‑all for wrapped errors.
     case unknown(Error)
 
     var errorDescription: String? {

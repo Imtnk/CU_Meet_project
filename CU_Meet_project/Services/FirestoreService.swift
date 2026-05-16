@@ -6,6 +6,7 @@
 import Foundation
 import FirebaseFirestore
 
+/// Singleton gateway for all Firestore reads and writes.
 final class FirestoreService {
 
     static let shared = FirestoreService()
@@ -20,29 +21,39 @@ final class FirestoreService {
 
     // MARK: - Rooms
 
+    /// Fetches all meeting rooms.
     func fetchRooms() async throws -> [MeetingRoom] {
         let snapshot = try await db.collection(C.rooms).getDocuments()
         return try snapshot.documents.map { try $0.data(as: MeetingRoom.self) }
     }
 
-    /// One-time seed — writes the hardcoded rooms array to Firestore as a batch.
-    func seedRooms(_ rooms: [MeetingRoom]) async throws {
-        let batch = db.batch()
-        let encoder = Firestore.Encoder()
-        for room in rooms {
-            let ref = db.collection(C.rooms).document(room.id)
-            let data = try encoder.encode(room)
-            batch.setData(data, forDocument: ref)
-        }
-        try await batch.commit()
-    }
-
     // MARK: - Users
 
+    /// Creates or merges the user document; existing fields absent from `user` are preserved.
     func upsertUser(_ user: AppUser) async throws {
         let ref = db.collection(C.users).document(user.id)
         let data = try Firestore.Encoder().encode(user)
         try await ref.setData(data, merge: true)
+    }
+
+    /// Returns nil when the user document does not exist.
+    func fetchUser(userID: String) async throws -> AppUser? {
+        let doc = try await db.collection(C.users).document(userID).getDocument()
+        guard doc.exists else { return nil }
+        return try? doc.data(as: AppUser.self)
+    }
+
+    /// Returns every user document in the collection.
+    func fetchAllUsers() async throws -> [AppUser] {
+        let snapshot = try await db.collection(C.users).getDocuments()
+        return try snapshot.documents.map {
+            try $0.data(as: AppUser.self)
+        }
+    }
+
+    /// Performs a partial update; fields not present in `fields` are left unchanged.
+    func updateUserFields(userID: String, fields: [String: Any]) async throws {
+        try await db.collection(C.users).document(userID).setData(fields, merge: true)
     }
 
     // MARK: - Groups
@@ -58,6 +69,7 @@ final class FirestoreService {
             }
     }
 
+    /// Returns the first group whose join code matches `code`, or nil if none is found.
     func fetchGroup(byJoinCode code: String) async throws -> Group? {
         let snapshot = try await db.collection(C.groups)
             .whereField("joinCode", isEqualTo: code)
@@ -67,6 +79,8 @@ final class FirestoreService {
         return try doc.data(as: Group.self)
     }
 
+    /// Generates a random 6-digit code that does not collide with any existing group's join code.
+    /// - Throws: `AppError.uniqueCodeGenerationFailed` after 10 unsuccessful attempts.
     func generateUniqueJoinCode() async throws -> String {
         var code = ""
         var isUnique = false
@@ -86,6 +100,7 @@ final class FirestoreService {
         return code
     }
 
+    /// Writes a new group document; the group's `id` is used as the Firestore document key.
     func createGroup(_ group: Group) async throws {
         let ref = db.collection(C.groups).document(group.id)
         let data = try Firestore.Encoder().encode(group)
@@ -99,6 +114,14 @@ final class FirestoreService {
             .updateData(["memberIDs": memberIDs])
     }
 
+    /// Updates the `name` field of an existing group document.
+    func updateGroupName(id: String, name: String) async throws {
+        try await db.collection(C.groups)
+            .document(id)
+            .updateData(["name": name])
+    }
+
+    /// Deletes the group and all its associated bookings atomically via a batched write.
     func deleteGroup(id: String) async throws {
         let bookingDocs = try await db.collection(C.bookings)
             .whereField("groupID", isEqualTo: id)
@@ -127,59 +150,115 @@ final class FirestoreService {
             }
     }
 
+    /// Writes a new booking document; the booking's `id` is used as the Firestore document key.
     func addBooking(_ booking: Booking) async throws {
         let ref = db.collection(C.bookings).document(booking.id)
         let data = try Firestore.Encoder().encode(booking)
         try await ref.setData(data)
     }
 
+    /// Updates only the `status` field of an existing booking document.
     func updateBookingStatus(id: String, status: BookingStatus) async throws {
         try await db.collection(C.bookings)
             .document(id)
             .updateData(["status": status.rawValue])
     }
 
-    // MARK: - Mock Data (DEBUG only)
-
-    func seedMockData(currentUserID: String) async throws {
-        let encoder = Firestore.Encoder()
-        let cal = Calendar.current
-        let today = cal.startOfDay(for: Date())
-
-        // Groups — written in a separate batch (rules allow any authenticated user)
-        // Current user is added to Alpha so their bookings appear on Home.
-        // Mock user IDs are kept as memberIDs for structural realism; no user
-        // documents are written for them since rules restrict writes to own UID.
-        let alphaMembers = ["mock_user_alice", "mock_user_bob", currentUserID]
-            .filter { !$0.isEmpty }
-        let mockGroups: [Group] = [
-            Group(id: "mock_group_alpha", name: "Alpha Team", joinCode: "000001", memberIDs: alphaMembers),
-            Group(id: "mock_group_beta",  name: "Beta Team",  joinCode: "000002", memberIDs: ["mock_user_bob", "mock_user_charlie"]),
-        ]
-        let groupBatch = db.batch()
-        for group in mockGroups {
-            let ref = db.collection(C.groups).document(group.id)
-            groupBatch.setData(try encoder.encode(group), forDocument: ref)
-        }
-        try await groupBatch.commit()
-
-        // Bookings — future dates so they surface in upcomingBookings()
-        let mockBookings: [Booking] = [
-            Booking(id: "mock_booking_1", roomID: "room_engineering", roomName: "Engineering Room",
-                    groupID: "mock_group_alpha", date: cal.date(byAdding: .day, value: 1, to: today)!,
-                    timeSlot: "09:00 - 10:00"),
-            Booking(id: "mock_booking_2", roomID: "room_library",     roomName: "Library Room",
-                    groupID: "mock_group_beta",  date: cal.date(byAdding: .day, value: 2, to: today)!,
-                    timeSlot: "14:00 - 15:00"),
-            Booking(id: "mock_booking_3", roomID: "room_business",    roomName: "Business Room",
-                    groupID: "mock_group_alpha", date: cal.date(byAdding: .day, value: 3, to: today)!,
-                    timeSlot: "11:00 - 12:00"),
-        ]
-        let bookingBatch = db.batch()
-        for booking in mockBookings {
-            let ref = db.collection(C.bookings).document(booking.id)
-            bookingBatch.setData(try encoder.encode(booking), forDocument: ref)
-        }
-        try await bookingBatch.commit()
+    /// Updates the `notes` field of an existing booking document.
+    func updateBookingNotes(id: String, notes: String?) async throws {
+        try await db.collection(C.bookings)
+            .document(id)
+            .updateData(["notes": notes as Any])
     }
+
+    /// Atomically appends a user rating using a weighted-average transaction.
+    func rateRoom(
+        roomID: String,
+        userID: String,
+        stars: Int
+    ) async throws {
+
+        let ref = db.collection(C.rooms).document(roomID)
+
+        let _ = try await db.runTransaction { transaction, errorPointer in
+
+            let snapshot: DocumentSnapshot
+
+            do {
+                snapshot = try transaction.getDocument(ref)
+            } catch let err as NSError {
+                errorPointer?.pointee = err
+                return nil
+            }
+
+            let currentRating =
+                snapshot.data()?["rating"] as? Double ?? 0
+
+            let currentReviewCount =
+                snapshot.data()?["reviewCount"] as? Int ?? 0
+
+            let currentUserRatingTotal =
+                snapshot.data()?["userRatingTotal"] as? Int ?? 0
+
+            let currentUserRatingCount =
+                snapshot.data()?["userRatingCount"] as? Int ?? 0
+
+            let rawRatings =
+                snapshot.data()?["userRatings"] as? [String: Any] ?? [:]
+
+            var userRatings: [String: Int] = [:]
+
+            for (key, value) in rawRatings {
+                if let intValue = value as? Int {
+                    userRatings[key] = intValue
+                }
+            }
+
+            let oldRating = userRatings[userID]
+
+            // Remove old rating contribution
+            var updatedUserRatingTotal = currentUserRatingTotal
+            var updatedUserRatingCount = currentUserRatingCount
+
+            if let oldRating {
+                updatedUserRatingTotal -= oldRating
+            } else {
+                updatedUserRatingCount += 1
+            }
+
+            // Add new rating
+            updatedUserRatingTotal += stars
+
+            userRatings[userID] = stars
+
+            // Recover original mocked values
+            let baseReviewCount =
+                currentReviewCount - currentUserRatingCount
+
+            let baseRatingTotal =
+                (currentRating * Double(currentReviewCount))
+                - Double(currentUserRatingTotal)
+
+            // Recalculate final combined values
+            let finalReviewCount =
+                baseReviewCount + updatedUserRatingCount
+
+            let finalRatingTotal =
+                baseRatingTotal + Double(updatedUserRatingTotal)
+
+            let finalRating =
+                finalRatingTotal / Double(max(finalReviewCount, 1))
+
+            transaction.updateData([
+                "userRatings": userRatings,
+                "userRatingTotal": updatedUserRatingTotal,
+                "userRatingCount": updatedUserRatingCount,
+                "rating": finalRating,
+                "reviewCount": finalReviewCount
+            ], forDocument: ref)
+
+            return nil
+        }
+    }
+
 }
